@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: brain_agriculture
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  brain-agriculture-api:
+    container_name: 'brain-agriculture-api'
+    hostname: 'brain-agriculture-api'
+    image: brain-agriculture-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    command: npm run start:dev && "--log.level=FATAL"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=PROD
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/fonts:/etc/fonts:ro"
+      - "/usr/share/fonts/truetype/msttcorefonts:/usr/share/fonts/truetype/msttcorefonts:ro"
+      - "/usr/share/fontconfig:/usr/share/fontconfig:ro"
+      - "/home/brain:/home/brain:rw"
+volumes:
+  pgdata:
