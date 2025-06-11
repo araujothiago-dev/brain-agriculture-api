@@ -1,6 +1,6 @@
 import { Propriedade } from "src/propriedades/entities/propriedade.entity";
 import { BaseEntity } from "src/utils/entities/base.entity";
-import { Column, Entity, Generated, Index, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Generated, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('produtores')
 export class Produtor extends BaseEntity {
