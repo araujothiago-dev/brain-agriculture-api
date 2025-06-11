@@ -1,9 +1,9 @@
 import { Cultura } from "src/culturas/entities/cultura.entity";
 import { Produtor } from "src/produtores/entities/produtor.entity";
 import { BaseEntity } from "src/utils/entities/base.entity";
-import { Column, Entity, Generated, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Generated, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('propriedades')
+@Entity({name: 'propriedades', schema: 'public'})
 export class Propriedade extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
@@ -34,7 +34,8 @@ export class Propriedade extends BaseEntity {
     @Column({ nullable: false, default: true })
     ativo?: boolean;
 
-    @ManyToOne(() => Produtor, produtor => produtor.propriedades)
+    @ManyToOne(() => Produtor, produtor => produtor.propriedades, { eager: false })
+    @JoinColumn({ name: 'produtor_id' })
     produtor: Produtor;
 
     @OneToMany(() => Cultura, cultura => cultura.propriedade, { cascade: true })
