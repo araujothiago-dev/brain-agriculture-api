@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
 import { Cultura } from "src/culturas/entities/cultura.entity";
 import { Produtor } from "src/produtores/entities/produtor.entity";
 import { IdDto } from "src/utils/id.dto";
@@ -37,8 +37,9 @@ export class CreatePropriedadeDto {
     @ValidateNested({ message: " O id do 'produtor' deve ser informado." })
     produtor: Produtor;
 
+    @IsArray()
     @Type(() => IdDto)
-    @ValidateNested({ message: " O id da 'cultura' deve ser informado." })
+    @ValidateNested({ message: " O id da 'cultura' deve ser informado.", each: true })
     culturas: Cultura[];
 
     @IsOptional()
