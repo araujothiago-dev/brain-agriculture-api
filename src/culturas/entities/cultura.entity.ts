@@ -1,18 +1,26 @@
 import { Propriedade } from "src/propriedades/entities/propriedade.entity";
 import { Safra } from "src/safras/entities/safra.entity";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Generated, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('culturas')
+@Entity({ name: 'culturas', schema: 'public' })
 export class Cultura {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ nullable: false, unique: true })
+    @Generated("uuid")
+    @Index()
+    idPublic: string;
+
+    @Column({ nullable: false, unique: true })
     nome: string;
 
-    @ManyToOne(() => Safra, safra => safra.culturas)
-    @JoinColumn({ name: 'safra_id' })
-    safra: Safra;
+    @ManyToMany(() => Safra, safra => safra.culturas)
+    @JoinTable({
+        name: 'cultura_safra',
+        schema: 'public'
+    })
+    safra: Safra[];
 
     @ManyToOne(() => Propriedade, propriedade => propriedade.culturas)
     @JoinColumn({ name: 'propriedade_id' })

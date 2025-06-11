@@ -1,14 +1,23 @@
 import { Cultura } from "src/culturas/entities/cultura.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Generated, Index, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('safras')
 export class Safra {
-    @PrimaryGeneratedColumn("uuid")
+    @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ nullable: false, unique: true })
+    @Generated("uuid")
+    @Index()
+    idPublic: string;
+
+    @Column({ nullable: false, unique: true })
     nome: string;
 
-    @OneToMany(() => Cultura, cultura => cultura.safra)
+    @ManyToMany(() => Cultura, cultura => cultura.safra)
+    @JoinTable({
+        name: 'cultura_safra'
+    })
     culturas: Cultura[];
+
 }
