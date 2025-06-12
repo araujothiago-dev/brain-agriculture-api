@@ -1,5 +1,5 @@
-import { Cultura } from "src/culturas/entities/cultura.entity";
-import { Column, Entity, Generated, Index, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { PropriedadeCulturaSafra } from "src/propriedadeCulturaSafra/propriedadeCulturaSafra.entity";
+import { Column, Entity, Generated, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('safras')
 export class Safra {
@@ -14,10 +14,9 @@ export class Safra {
     @Column({ nullable: false, unique: true })
     nome: string;
 
-    @ManyToMany(() => Cultura, cultura => cultura.safra)
-    @JoinTable({
-        name: 'cultura_safra'
-    })
-    culturas: Cultura[];
+    @Column({ nullable: false, default: true })
+    ativo: boolean;
 
+    @OneToMany(() => PropriedadeCulturaSafra, pcs => pcs.safra)
+    propriedadesCulturas: PropriedadeCulturaSafra[];
 }
