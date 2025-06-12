@@ -7,6 +7,12 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { EstadoModule } from './estado/estado.module';
+import { MunicipioModule } from './municipio/municipio.module';
+import { UsuarioModule } from './usuario/usuario.module';
+import { AuthModule } from './auth/auth.module';
+import { PerfilModule } from './perfil/perfil.module';
+import { PermissionModule } from './permission/permission.module';
 
 require('dotenv').config();
 
@@ -25,12 +31,12 @@ require('dotenv').config();
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DATABASE,
       entities: ["dist/**/*.entity{.ts,.js}"],
-      // migrationsRun: Boolean(process.env.RUN_MIGRATIONS),
-      // migrationsTableName: 'migration',
-      // migrations: ["dist/config/migrations/**/*.js"],
+      migrationsRun: Boolean(process.env.RUN_MIGRATIONS),
+      migrationsTableName: 'migration',
+      migrations: ["dist/config/migrations/**/*.js"],
       ssl: false,
       synchronize: Boolean(process.env.SYNCHRONIZE),
-      // autoLoadEntities: true,
+      autoLoadEntities: true,
       namingStrategy: new SnakeNamingStrategy(),
       retryDelay: 3000,
       retryAttempts: 1000,
@@ -39,7 +45,15 @@ require('dotenv').config();
     ProdutoresModule, 
     PropriedadesModule, 
     SafrasModule, 
-    CulturasModule
+    CulturasModule,
+    EstadoModule,
+    MunicipioModule,
+    PerfilModule,
+    PermissionModule,
+    UsuarioModule,
+    AuthModule,
+
+
   ],
   controllers: [],
   providers: [],
