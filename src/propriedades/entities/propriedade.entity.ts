@@ -1,9 +1,10 @@
-import { Cultura } from "src/culturas/entities/cultura.entity";
+import { Municipio } from "src/municipio/entities/municipio.entity";
 import { Produtor } from "src/produtores/entities/produtor.entity";
+import { PropriedadeCulturaSafra } from "src/propriedadeCulturaSafra/propriedadeCulturaSafra.entity";
 import { BaseEntity } from "src/utils/entities/base.entity";
 import { Column, Entity, Generated, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity({name: 'propriedades', schema: 'public'})
+@Entity({ name: 'propriedades', schema: 'public' })
 export class Propriedade extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
@@ -16,11 +17,9 @@ export class Propriedade extends BaseEntity {
     @Column({ nullable: false })
     nome: string;
 
-    @Column({ nullable: false })
-    cidade: string;
-
-    @Column({ nullable: false })
-    estado: string;
+    @ManyToOne(() => Municipio, municipio => municipio.propriedades, { eager: true, nullable: false })
+    @JoinColumn({ name: 'cidade_id' })
+    cidade: Municipio;
 
     @Column({ nullable: false, type: 'float' })
     area_total: number;
@@ -34,10 +33,14 @@ export class Propriedade extends BaseEntity {
     @Column({ nullable: false, default: true })
     ativo?: boolean;
 
-    @ManyToOne(() => Produtor, produtor => produtor.propriedades, { eager: false })
+    @ManyToOne(() => Produtor, produtor => produtor.propriedades)
     @JoinColumn({ name: 'produtor_id' })
     produtor: Produtor;
 
-    @OneToMany(() => Cultura, cultura => cultura.propriedade, { cascade: true })
-    culturas: Cultura[];
+    @ManyToOne(() => Municipio, municipio => municipio.propriedades, { eager: true, nullable: false })
+    @JoinColumn({ name: 'municipio_id' })
+    municipio: Municipio;
+
+    @OneToMany(() => PropriedadeCulturaSafra, pcs => pcs.propriedade)
+    culturasSafras: PropriedadeCulturaSafra[];
 }

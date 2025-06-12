@@ -67,7 +67,8 @@ export class PropriedadesService {
         where: { id: propriedade.id },
         relations: {
           produtor: true,
-          culturas: {
+          culturasSafras: {
+            cultura: true,
             safra: true
           }
         }
@@ -89,11 +90,12 @@ export class PropriedadesService {
         loadEagerRelations: false,
         relations: {
           produtor: true,
-          culturas: {
+          culturasSafras: {
+            cultura: true,
             safra: true
           }
         },
-        select: ['id', 'idPublic', 'nome', 'cidade', 'estado', 'area_total', 'area_agricultavel', 'area_vegetacao', 'ativo', 'produtor', 'culturas'],
+        select: ['id', 'idPublic', 'nome', 'cidade', 'area_total', 'area_agricultavel', 'area_vegetacao', 'ativo', 'produtor', 'culturasSafras'],
         where: [
           {
             nome: ILike('%' + parameter + '%'),
@@ -104,8 +106,18 @@ export class PropriedadesService {
             ativo: true,
           },
           {
-            culturas: {
-              nome: ILike('%' + parameter + '%'),
+            culturasSafras: {
+              cultura: {
+                nome: ILike('%' + parameter + '%'),
+              },
+            },
+            ativo: true,
+          },
+          {
+            culturasSafras: {
+              safra: {
+                nome: ILike('%' + parameter + '%'),
+              }
             },
             ativo: true,
           },
@@ -114,7 +126,9 @@ export class PropriedadesService {
             ativo: true,
           },
           {
-            estado: ILike('%' + parameter + '%'),
+            cidade: {
+              estado: ILike('%' + parameter + '%'),
+            },
             ativo: true,
           }
         ],
@@ -141,11 +155,12 @@ export class PropriedadesService {
         loadEagerRelations: false,
         relations: {
           produtor: true,
-          culturas: {
+          culturasSafras: {
+            cultura: true,
             safra: true
           }
         },
-        select: ['id', 'idPublic', 'nome', 'cidade', 'estado', 'area_total', 'area_agricultavel', 'area_vegetacao', 'ativo', 'produtor', 'culturas'],
+        select: ['id', 'idPublic', 'nome', 'cidade', 'area_total', 'area_agricultavel', 'area_vegetacao', 'ativo', 'produtor', 'culturasSafras'],
         where: {
           produtor: {
             idPublic: idPublicProdutor
@@ -169,7 +184,8 @@ export class PropriedadesService {
         loadEagerRelations: false,
         relations: {
           produtor: true,
-          culturas: {
+          culturasSafras: {
+            cultura: true,
             safra: true
           }
         },
@@ -249,11 +265,8 @@ export class PropriedadesService {
 
   async remove(idPublic: string) {
     try {
-      const propriedadeReturn = await this.propriedadeRepository.findOne({
-        where: {
+      const propriedadeReturn = await this.propriedadeRepository.findOneBy({
           idPublic
-        },
-        select: ['id', 'idPublic', 'nome'],
       })
 
       if (!propriedadeReturn) {
@@ -262,7 +275,6 @@ export class PropriedadesService {
 
       const returnDelete = await this.propriedadeRepository.delete({ idPublic: propriedadeReturn.idPublic }).catch(async err => {
         if (err?.code == '23503') {
-          await this.dataSource.manager.update(Propriedade, { idPublic }, { ativo: false });
           return await this.propriedadeRepository.softDelete({ idPublic: propriedadeReturn.idPublic })
         } else {
           throw err;
