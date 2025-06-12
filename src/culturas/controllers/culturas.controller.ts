@@ -1,34 +1,49 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { CulturasService } from '../services/culturas.service';
 import { CreateCulturaDto } from '../dto/create-cultura.dto';
 import { UpdateCulturaDto } from '../dto/update-cultura.dto';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Cultura } from '../entities/cultura.entity';
+import { ResponseGeneric } from 'src/utils/response.generic';
+import PermissionGuard from 'src/auth/guards/permission.guard';
+import CulturasPermission from '../enums/culturasPermission.enum';
+import { FindOneParams } from 'src/utils/findOne.params';
+import { PaginationInterface } from 'src/utils/interface/pagination.interface';
 
+@ApiBearerAuth('access_token')
+@ApiTags('Culturas')
+@ApiResponse({type: ResponseGeneric<Cultura>})
 @Controller('culturas')
 export class CulturasController {
-  constructor(private readonly culturasService: CulturasService) {}
+  constructor(private readonly culturasService: CulturasService) { }
 
   @Post()
-  create(@Body() createCulturaDto: CreateCulturaDto) {
-    return this.culturasService.create(createCulturaDto);
+  @UseGuards(PermissionGuard(CulturasPermission.MODIFICAR_CULTURAS, false))
+  async create(@Body() createCulturaDto: CreateCulturaDto) {
+    return await this.culturasService.create(createCulturaDto);
   }
 
-  @Get()
-  findAll() {
-    return this.culturasService.findAll();
+  @Get(':page/:size/search/:parameter')
+  @UseGuards(PermissionGuard(CulturasPermission.LER_CULTURAS, false))
+  async findAll(@Param('page') page: number, @Param('size') size: number): Promise<ResponseGeneric<PaginationInterface<Cultura[]>>> {
+    return await this.culturasService.findAll(page, size);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.culturasService.findOne(id);
+  @Get(':idPublic')
+  @UseGuards(PermissionGuard(CulturasPermission.LER_CULTURAS, false))
+  findOne(@Param('idPublic') {idPublic}: FindOneParams): Promise<ResponseGeneric<Cultura>> {
+    return this.culturasService.findOne(idPublic);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: number, @Body() updateCulturaDto: UpdateCulturaDto) {
-    return this.culturasService.update(id, updateCulturaDto);
+  @Patch(':idPublic')
+  @UseGuards(PermissionGuard(CulturasPermission.MODIFICAR_CULTURAS, false))
+  async update(@Param('idPublic') {idPublic}: FindOneParams, @Body() updateCulturaDto: UpdateCulturaDto) {
+    return await this.culturasService.update(idPublic, updateCulturaDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.culturasService.remove(id);
+  @Delete(':idPublic')
+  @UseGuards(PermissionGuard(CulturasPermission.MODIFICAR_CULTURAS, false))
+  async remove(@Param('idPublic') {idPublic}: FindOneParams) {
+    return await this.culturasService.remove(idPublic);
   }
 }
