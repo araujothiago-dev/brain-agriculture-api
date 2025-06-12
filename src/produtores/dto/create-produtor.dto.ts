@@ -11,7 +11,7 @@ export class CreateProdutoreDto {
 
     @IsNotEmpty({ message: "O 'CPF/CNPJ' deve ser informado." })
     @IsCPFOrCNPJ({ message: "O 'CPF/CNPJ' deve ser válido." })
-    documento: string;
+    cpfCnpj: string;
 
     @IsOptional()
     @IsBoolean({ message: "O 'ativo' deve ser verdadeiro ou falso." })
@@ -19,7 +19,7 @@ export class CreateProdutoreDto {
 
     @Type(() => IdDto)
     @ValidateNested({ message: " O id da 'propriedade' deve ser informado." })
-    propriedade: Propriedade;
+    propriedades: Propriedade[];
 
     @IsOptional()
     @IsString({ message: "O 'createBy' deve ser uma string." })

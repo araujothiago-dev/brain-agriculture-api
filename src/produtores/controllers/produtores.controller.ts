@@ -1,12 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { CreateProdutoreDto } from '../dto/create-produtor.dto';
 import { UpdateProdutoreDto } from '../dto/update-produtor.dto';
 import { ProdutoresService } from '../services/produtores.service';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ResponseGeneric } from 'src/utils/response.generic';
 import { Produtor } from '../entities/produtor.entity';
 import { PaginationInterface } from 'src/utils/interface/pagination.interface';
+import PermissionGuard from 'src/auth/guards/permission.guard';
+import ProdutorPermission from '../enum/produtorPermission.enum';
 
+@ApiBearerAuth('access_token')
 @ApiTags('produtores')
 @ApiResponse({type: ResponseGeneric<Produtor>})
 @Controller('produtores')
@@ -14,11 +17,13 @@ export class ProdutoresController {
   constructor(private readonly produtoresService: ProdutoresService) {}
 
   @Post()
+  @UseGuards(PermissionGuard(ProdutorPermission.MODIFICAR_PRODUTOR))
   async create(@Body() createProdutoreDto: CreateProdutoreDto): Promise<ResponseGeneric<Produtor>> {
     return await this.produtoresService.create(createProdutoreDto);
   }
 
   @Get(':page/:size/search/:parameter')
+  @UseGuards(PermissionGuard(ProdutorPermission.LER_PRODUTOR))
   async findAll(
     @Param('page') page: number, 
     @Param('size') size: number, 
@@ -28,21 +33,25 @@ export class ProdutoresController {
   }
 
   @Get('propriedade/:idPublicPropriedade')
+  @UseGuards(PermissionGuard(ProdutorPermission.LER_PRODUTOR))
   async findAllByPropriedade(@Param('idPublicPropriedade') idPublicPropriedade: string): Promise<ResponseGeneric<Produtor[]>> {
     return await this.produtoresService.findAllByPropriedade(idPublicPropriedade);
   }
 
   @Get(':idPublic')
+  @UseGuards(PermissionGuard(ProdutorPermission.LER_PRODUTOR))
   findOne(@Param('idPublic') idPublic: string): Promise<ResponseGeneric<Produtor>> {
     return this.produtoresService.findOne(idPublic);
   }
 
   @Patch(':idPublic')
+  @UseGuards(PermissionGuard(ProdutorPermission.MODIFICAR_PRODUTOR))
   update(@Param('idPublic') idPublic: string, @Body() updateProdutoreDto: UpdateProdutoreDto): Promise<ResponseGeneric<Produtor>> {
     return this.produtoresService.update(idPublic, updateProdutoreDto);
   }
 
   @Delete(':idPublic')
+  @UseGuards(PermissionGuard(ProdutorPermission.MODIFICAR_PRODUTOR))
   remove(@Param('idPublic') idPublic: string): Promise<ResponseGeneric<Produtor>> {
     return this.produtoresService.remove(idPublic);
   }

@@ -6,6 +6,8 @@ import { DataSource, ILike, Repository } from 'typeorm';
 import { Produtor } from '../entities/produtor.entity';
 import { ResponseGeneric } from 'src/utils/response.generic';
 import { PaginationInterface } from 'src/utils/interface/pagination.interface';
+import * as bcrypt from 'bcrypt';
+import { Usuario } from 'src/usuario/entities/usuario.entity';
 
 @Injectable()
 export class ProdutoresService {
@@ -18,16 +20,16 @@ export class ProdutoresService {
 
   async create(body: CreateProdutoreDto) {
     try {
-      if (body.documento) {
-        body.documento = body.documento.replace(/[^0-9]/g, "").trim();
+      if (body.cpfCnpj) {
+        body.cpfCnpj = body.cpfCnpj.replace(/[^0-9]/g, "").trim();
       }
 
       const existingProdutor = await this.produtorRepository.findOne({
-        where: { documento: body.documento },
+        where: { cpfCnpj: body.cpfCnpj },
       });
 
       if (existingProdutor) {
-        throw 'Produtor com o mesmo CPF/CNPJ ja cadastrado.';
+        throw 'Produtor com o mesmo CPF/CNPJ já cadastrado.';
       }
 
       const produtor = await this.produtorRepository.save(body);
@@ -51,14 +53,14 @@ export class ProdutoresService {
         relations: {
           propriedades: true
         },
-        select: ['id', 'idPublic', 'nome', 'documento', 'ativo', 'propriedades'],
+        select: ['id', 'idPublic', 'nome', 'cpfCnpj', 'ativo', 'propriedades'],
         where: [
           {
             nome: ILike('%' + parameter + '%'),
             ativo: true,
           },
           {
-            documento: ILike('%' + parameter + '%'),
+            cpfCnpj: ILike('%' + parameter + '%'),
             ativo: true,
           }
         ],
@@ -86,7 +88,7 @@ export class ProdutoresService {
         relations: {
           propriedades: true
         },
-        select: ['id', 'idPublic', 'nome', 'documento', 'ativo', 'propriedades'],
+        select: ['id', 'idPublic', 'nome', 'cpfCnpj', 'ativo', 'propriedades'],
         where: {
           propriedades: {
             idPublic: idPublicPropriedade
@@ -166,7 +168,7 @@ export class ProdutoresService {
         where: {
           idPublic
         },
-        select: ['id', 'idPublic', 'documento', 'nome'],
+        select: ['id', 'idPublic', 'cpfCnpj', 'nome'],
       })
 
       if (!produtorReturn) {
@@ -175,7 +177,6 @@ export class ProdutoresService {
 
       const returnDelete = await this.produtorRepository.delete({ idPublic: produtorReturn.idPublic }).catch(async err => {
         if (err?.code == '23503') {
-          await this.dataSource.manager.update(Produtor, { idPublic }, { ativo: false });
           return await this.produtorRepository.softDelete({ idPublic: produtorReturn.idPublic })
         } else {
           throw err;
