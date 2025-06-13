@@ -13,12 +13,10 @@ export class CreateCulturaDto {
     @IsBoolean({ message: "O 'ativo' deve ser verdadeiro ou falso." })
     ativo?: boolean;
 
-    @IsArray()
     @Type(() => IdDto)
     @ValidateNested({ message: " O id do 'produtor' deve ser informado." })
-    propriedade?: Propriedade[];
+    propriedade: Propriedade[];
 
-    @IsArray()
     @Type(() => IdDto)
     @ValidateNested({ message: " O id da 'safra' deve ser informado." })
     safras: Safra[];

@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
 import { IdDto } from "src/utils/id.dto";
 import { Cultura } from '../../culturas/entities/cultura.entity';
 
@@ -12,7 +12,6 @@ export class CreateSafraDto {
     @IsBoolean({ message: "O 'ativo' deve ser verdadeiro ou falso." })
     ativo?: boolean;
 
-    @IsArray()
     @Type(() => IdDto)
     @ValidateNested({ message: " O id da 'cultura' deve ser informado." })
     culturas?: Cultura[];
