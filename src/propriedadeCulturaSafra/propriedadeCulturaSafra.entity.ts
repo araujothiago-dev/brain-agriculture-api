@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, DeleteDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, DeleteDateColumn, Column, Generated, Index } from "typeorm";
 import { Cultura } from "src/culturas/entities/cultura.entity";
 import { Safra } from "src/safras/entities/safra.entity";
 import { Propriedade } from "src/propriedades/entities/propriedade.entity";
@@ -7,6 +7,11 @@ import { Propriedade } from "src/propriedades/entities/propriedade.entity";
 export class PropriedadeCulturaSafra {
     @PrimaryGeneratedColumn()
     id: number;
+
+    @Column({ nullable: false, unique: true })
+    @Generated("uuid")
+    @Index()
+    idPublic: string;
 
     @ManyToOne(() => Propriedade, { eager: true })
     @JoinColumn({ name: 'propriedade_id' })
