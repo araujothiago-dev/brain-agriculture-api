@@ -8,6 +8,8 @@ import { ResponseGeneric } from 'src/utils/response.generic';
 import { PaginationInterface } from 'src/utils/interface/pagination.interface';
 import { Cultura } from 'src/culturas/entities/cultura.entity';
 import { Produtor } from 'src/produtores/entities/produtor.entity';
+import { PropriedadeCulturaSafra } from 'src/propriedadeCulturaSafra/propriedadeCulturaSafra.entity';
+import { Safra } from 'src/safras/entities/safra.entity';
 
 @Injectable()
 export class PropriedadesService {
@@ -18,6 +20,11 @@ export class PropriedadesService {
   ) { }
 
   async create(body: CreatePropriedadeDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+
+    await queryRunner.startTransaction();
     try {
 
       const somaAreas = (body.areaAgricultavel ?? 0) + (body.areaVegetacao ?? 0);
@@ -25,29 +32,16 @@ export class PropriedadesService {
         throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
       }
 
-      // if (body.culturas && body.culturas.length > 0) {
-      //   const culturaRepository = this.dataSource.getRepository(Cultura);
-      //   const culturasRelacionadas: Cultura[] = [];
+      const propriedadeExistente = await this.propriedadeRepository.findOne({
+        where: { matricula: body.matricula }
+      });
 
-      //   for (const cultura of body.culturas) {
-      //     let culturaRelacionada: Cultura;
+      if (propriedadeExistente) {
+        throw 'Já existe uma propriedade com esta matrícula de imóvel.';
+      }
 
-      //     if (cultura.id) {
-      //       const culturaReturne = await culturaRepository.findOne({ where: { id: cultura.id } });
-      //       if (!culturaReturne) {
-      //         culturaRelacionada = await culturaRepository.save(cultura);
-      //       } else {
-      //         culturaRelacionada = culturaReturne;
-      //       }
-      //     } else {
-      //       culturaRelacionada = await culturaRepository.save(cultura);
-      //     }
-      //     culturasRelacionadas.push(culturaRelacionada);
-      //   }
-      //   body.culturas = culturasRelacionadas;
-      // }
-      if(body.produtor) {
-        
+      if (body.produtor) {
+
         const produtorExistente = await this.dataSource.getRepository(Produtor).findOne({ where: { id: body.produtor.id } });
 
         if (!produtorExistente) {
@@ -58,22 +52,55 @@ export class PropriedadesService {
       if (body.culturas?.length) {
         const culturaRepository = this.dataSource.getRepository(Cultura);
 
-        const culturasRelacionadas = await Promise.all(
+        await Promise.all(
           body.culturas.map(async (cultura) => {
+            const culturaId = cultura.id?.id;
             if (cultura.id) {
-              const existente = await culturaRepository.findOne({ where: { id: cultura.id } });
-              return existente ?? await culturaRepository.save(cultura);
+              const existente = await culturaRepository.findOne({ where: { id: culturaId } });
+              return existente ?? await culturaRepository.save({ id: culturaId });
             }
-            return await culturaRepository.save(cultura);
+            return await culturaRepository.save({
+              id: cultura.id,
+              safras: cultura.safras,
+            });
           })
         );
-
-        body.culturas = culturasRelacionadas;
       }
 
-      const propriedade = await this.propriedadeRepository.save(body);
+      const propriedade = await queryRunner.manager.save(Propriedade, body);
 
-      const propriedadeReturn = await this.propriedadeRepository.findOne({
+      await queryRunner.commitTransaction();
+
+      // Salva as culturas relacionadas na tabela de junção
+      if (body.culturas?.length) {
+        const pcsRepository = this.dataSource.getRepository(PropriedadeCulturaSafra);
+        const culturaRepository = this.dataSource.getRepository(Cultura);
+        const safraRepository = this.dataSource.getRepository(Safra);
+
+        for (const culturaInput of body.culturas) {
+          const cultura = await culturaRepository.findOne({ where: { id: culturaInput.id.id } });
+          if (!cultura) {
+            throw `Cultura de ID ${culturaInput.id} não encontrada.`;
+          }
+
+          let safra: Safra | undefined;
+          if (culturaInput.safras?.id) {
+            const safraResult = await safraRepository.findOne({ where: { id: culturaInput.safras.id } });
+            if (!safraResult) {
+              throw `Safra de ID ${culturaInput.safras.id} não encontrada.`;
+            }
+            safra = safraResult;
+          }
+
+          await pcsRepository.save({
+            propriedade,
+            cultura,
+            safra: safra,
+          });
+        }
+      }
+
+      const propriedadeReturn = await queryRunner.manager.findOne(Propriedade, {
         where: { id: propriedade.id },
         relations: {
           produtor: true,
@@ -90,7 +117,11 @@ export class PropriedadesService {
 
       return new ResponseGeneric<Propriedade>(propriedadeReturn);
     } catch (error) {
-      throw new HttpException({ message: 'Não foi possível cadastrar Propriedade. ', code: error?.code, erro: error }, HttpStatus.BAD_REQUEST);
+      await queryRunner.rollbackTransaction();
+
+      throw new HttpException({ message: 'Não foi possível cadastrar a Propriedade. ', code: error?.code, erro: error }, HttpStatus.BAD_REQUEST)
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -234,17 +265,19 @@ export class PropriedadesService {
       if (body.culturas?.length) {
         const culturaRepository = this.dataSource.getRepository(Cultura);
 
-        const culturasRelacionadas = await Promise.all(
+        await Promise.all(
           body.culturas.map(async (cultura) => {
+            const culturaId = cultura.id?.id;
             if (cultura.id) {
-              const existente = await culturaRepository.findOne({ where: { id: cultura.id } });
-              return existente ?? await culturaRepository.save(cultura);
+              const existente = await culturaRepository.findOne({ where: { id: culturaId } });
+              return existente ?? await culturaRepository.save({ id: culturaId });
             }
-            return await culturaRepository.save(cultura);
+            return await culturaRepository.save({
+              id: cultura.id,
+              safras: cultura.safras,
+            });
           })
         );
-
-        body.culturas = culturasRelacionadas;
       }
 
       const propriedadeReturne = await this.propriedadeRepository.findOneBy({
@@ -276,7 +309,7 @@ export class PropriedadesService {
   async remove(idPublic: string) {
     try {
       const propriedadeReturn = await this.propriedadeRepository.findOneBy({
-          idPublic
+        idPublic
       })
 
       if (!propriedadeReturn) {
