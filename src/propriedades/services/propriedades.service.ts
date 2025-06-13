@@ -7,6 +7,7 @@ import { Propriedade } from '../entities/propriedade.entity';
 import { ResponseGeneric } from 'src/utils/response.generic';
 import { PaginationInterface } from 'src/utils/interface/pagination.interface';
 import { Cultura } from 'src/culturas/entities/cultura.entity';
+import { Produtor } from 'src/produtores/entities/produtor.entity';
 
 @Injectable()
 export class PropriedadesService {
@@ -18,8 +19,9 @@ export class PropriedadesService {
 
   async create(body: CreatePropriedadeDto) {
     try {
-      const somaAreas = (body.area_agricultavel ?? 0) + (body.area_vegetacao ?? 0);
-      if (somaAreas > (body.area_total ?? 0)) {
+
+      const somaAreas = (body.areaAgricultavel ?? 0) + (body.areaVegetacao ?? 0);
+      if (somaAreas > (body.areaTotal ?? 0)) {
         throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
       }
 
@@ -44,6 +46,14 @@ export class PropriedadesService {
       //   }
       //   body.culturas = culturasRelacionadas;
       // }
+      if(body.produtor) {
+        
+        const produtorExistente = await this.dataSource.getRepository(Produtor).findOne({ where: { id: body.produtor.id } });
+
+        if (!produtorExistente) {
+          throw 'Produtor não encontrado.';
+        }
+      }
 
       if (body.culturas?.length) {
         const culturaRepository = this.dataSource.getRepository(Cultura);
@@ -95,7 +105,7 @@ export class PropriedadesService {
             safra: true
           }
         },
-        select: ['id', 'idPublic', 'nome', 'cidade', 'area_total', 'area_agricultavel', 'area_vegetacao', 'ativo', 'produtor', 'culturasSafras'],
+        select: ['id', 'idPublic', 'nome', 'cidade', 'areaTotal', 'areaAgricultavel', 'areaVegetacao', 'ativo', 'produtor', 'culturasSafras'],
         where: [
           {
             nome: ILike('%' + parameter + '%'),
@@ -160,7 +170,7 @@ export class PropriedadesService {
             safra: true
           }
         },
-        select: ['id', 'idPublic', 'nome', 'cidade', 'area_total', 'area_agricultavel', 'area_vegetacao', 'ativo', 'produtor', 'culturasSafras'],
+        select: ['id', 'idPublic', 'nome', 'cidade', 'areaTotal', 'areaAgricultavel', 'areaVegetacao', 'ativo', 'produtor', 'culturasSafras'],
         where: {
           produtor: {
             idPublic: idPublicProdutor
@@ -213,8 +223,8 @@ export class PropriedadesService {
 
     try {
       // Validação da soma das áreas
-      const somaAreas = (body.area_agricultavel ?? 0) + (body.area_vegetacao ?? 0);
-      if (somaAreas > (body.area_total ?? 0)) {
+      const somaAreas = (body.areaAgricultavel ?? 0) + (body.areaVegetacao ?? 0);
+      if (somaAreas > (body.areaTotal ?? 0)) {
         throw new HttpException(
           { message: 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.' },
           HttpStatus.BAD_REQUEST
