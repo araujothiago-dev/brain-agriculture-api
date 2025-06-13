@@ -10,7 +10,7 @@ export class UpdateUsuarioDto extends OmitType(CreateUsuarioDto, ['senha', 'crea
     @IsOptional()
     @Type(() => IdDto)
     @ValidateNested({ message: " O id do 'perfil' deve ser informado.", each: true })
-    perfil?: Perfil[];
+    perfil?: Perfil;
 
     @IsNotEmpty({ message: "O 'updateBy' deve ser informado." })
     @IsString({ message: "O 'updateBy' deve ser uma string." })

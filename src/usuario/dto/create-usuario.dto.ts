@@ -33,7 +33,7 @@ export class CreateUsuarioDto {
     @ArrayMinSize(1, { message: "É necessário informar ao menos um perfil." })
     @Type(() => IdDto)
     @ValidateNested({ message: " O id do 'perfil' deve ser informado.", each: true })
-    perfil: Perfil[];
+    perfil: Perfil;
 
     @IsOptional()
     @IsString({ message: "O 'createBy' deve ser uma string." })

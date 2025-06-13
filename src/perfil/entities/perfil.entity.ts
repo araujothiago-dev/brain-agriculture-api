@@ -27,9 +27,6 @@ export class Perfil extends BaseEntity{
 	})
 	permission: Permission[];
 
-	@ManyToMany(() => Usuario, usuario => usuario.perfil)
-	@JoinTable({
-		name: 'usuario_perfil'
-	})
+	@OneToMany(() => Usuario, usuario => usuario.perfil)
 	usuario: Usuario[];
 }

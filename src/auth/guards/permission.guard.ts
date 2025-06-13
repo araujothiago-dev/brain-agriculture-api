@@ -16,12 +16,10 @@ const PermissionGuard = (permission: any, allowContext: boolean = false): Type<C
       const request = context.switchToHttp().getRequest();
       const usuario: Usuario = request.user;
       const params = request.params;
-      const perfil: Perfil[] = usuario?.perfil;
+      const perfil: Perfil = usuario?.perfil;
       const permissions: Permission[] = [];
-      perfil.map(p => {
-        p.permission.forEach(per => {
-          permissions.push(per);
-        })
+      perfil.permission.forEach(p => {
+          permissions.push(p);
       });
 
 			if (!(permissions.some(p => p.nome == permission)) && !(allowContext == true && params?.idPublic == usuario.idPublic)) {
