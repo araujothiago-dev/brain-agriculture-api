@@ -4,18 +4,32 @@ import { DataSource } from 'typeorm';
 import { seedSafra } from './config/seeders/seedSafra';
 import { seedCultura } from './config/seeders/seedCultura';
 import { seedProdutoresPropriedades } from './config/seeders/seedProdutoresPropriedades';
+import { HttpExceptionFilter } from './utils/http-exception.filter';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    cors: {
+      origin: '*'
+  } });
 
   const dataSource = app.get(DataSource);
 
-  if (process.env.NODE_ENV !== 'PRODUCTION') {
-    await seedSafra(dataSource);
-    await seedCultura(dataSource);
-    await seedProdutoresPropriedades(dataSource);
-  }
+  app.useGlobalFilters(new HttpExceptionFilter)
+  
+  await app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      stopAtFirstError: false
+    }),
+  );
 
-  await app.listen(process.env.PORT ?? 3000);
+  // if (process.env.NODE_ENV !== 'PRODUCTION') {
+  //   await seedSafra(dataSource);
+  //   await seedCultura(dataSource);
+  //   await seedProdutoresPropriedades(dataSource);
+  // }
+
+  await app.listen(Number(process.env.PORT));
 }
 bootstrap();
