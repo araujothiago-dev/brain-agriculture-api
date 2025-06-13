@@ -52,7 +52,7 @@ export class ProdutoresService {
           throw 'Erro ao cadastrar usuário.';
         }
 
-        body.usuario.id = usuarioSave.data.id;
+        body.usuario = usuarioSave.data;
       }
 
       const produtor = await this.produtorRepository.save(body);

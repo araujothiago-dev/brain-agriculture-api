@@ -2,7 +2,7 @@ import { IsCPFOrCNPJ } from "brazilian-class-validator";
 import { Type } from "class-transformer";
 import { IsBoolean, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
 import { Propriedade } from "src/propriedades/entities/propriedade.entity";
-import { Usuario } from "src/usuario/entities/usuario.entity";
+import { CreateUsuarioDto } from "src/usuario/dto/create-usuario.dto";
 import { IdDto } from "src/utils/id.dto";
 
 export class CreateProdutoreDto {
@@ -18,9 +18,9 @@ export class CreateProdutoreDto {
     @IsBoolean({ message: "O 'ativo' deve ser verdadeiro ou falso." })
     ativo?: boolean;
 
-    @Type(() => IdDto)
+    @Type(() => CreateUsuarioDto )
     @ValidateNested({ message: " O id do 'usuario' deve ser informado." })
-    usuario: Usuario;
+    usuario: CreateUsuarioDto;
 
     @Type(() => IdDto)
     @ValidateNested({ message: " O id da 'propriedade' deve ser informado." })

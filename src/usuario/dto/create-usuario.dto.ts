@@ -29,8 +29,7 @@ export class CreateUsuarioDto {
     @IsBoolean({ message: "O 'redefinir pass' deve ser verdadeiro ou falso." })
     redefinirPass?: boolean;
 
-    @IsNotEmpty({ message: "Os perfis devem ser informados." })
-    @ArrayMinSize(1, { message: "É necessário informar ao menos um perfil." })
+    @IsNotEmpty({ message: "O perfi devem ser informados." })
     @Type(() => IdDto)
     @ValidateNested({ message: " O id do 'perfil' deve ser informado.", each: true })
     perfil: Perfil;

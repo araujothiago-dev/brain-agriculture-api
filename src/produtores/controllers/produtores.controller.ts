@@ -17,8 +17,8 @@ export class ProdutoresController {
   constructor(private readonly produtoresService: ProdutoresService) {}
 
   @Post()
-  async create(@Body() createProdutoreDto: CreateProdutoreDto): Promise<ResponseGeneric<Produtor>> {
-    return await this.produtoresService.create(createProdutoreDto);
+  async create(@Body() body: CreateProdutoreDto): Promise<ResponseGeneric<Produtor>> {
+    return await this.produtoresService.create(body);
   }
 
   @Get(':page/:size/search/:parameter')
@@ -45,8 +45,8 @@ export class ProdutoresController {
 
   @Patch(':idPublic')
   @UseGuards(PermissionGuard(ProdutorPermission.MODIFICAR_PRODUTOR))
-  update(@Param('idPublic') idPublic: string, @Body() updateProdutoreDto: UpdateProdutoreDto): Promise<ResponseGeneric<Produtor>> {
-    return this.produtoresService.update(idPublic, updateProdutoreDto);
+  update(@Param('idPublic') idPublic: string, @Body() body: UpdateProdutoreDto): Promise<ResponseGeneric<Produtor>> {
+    return this.produtoresService.update(idPublic, body);
   }
 
   @Delete(':idPublic')

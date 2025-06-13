@@ -135,7 +135,7 @@ export class Init1650487910713 implements MigrationInterface {
 		@ESTADO
 		-------------- */
 		// INSERÇÃO DE ESTADOS NA TABELA ESTADO
-		await queryRunner.query(`
+		await queryRunner.query(` 
 			INSERT INTO public.estado (nome, sigla) VALUES
 				('Rondônia', 'RO'), 
 				('Acre', 'AC'), 
@@ -5746,18 +5746,10 @@ export class Init1650487910713 implements MigrationInterface {
 
 		// INSERÇÃO DE USUÁRIO NA TABELA USUARIO
 		await queryRunner.query(`
-				INSERT INTO security.usuario (nome, email, cpf_cnpj, senha, ativo) VALUES
-						('Admin', '${email}', '12345678909', '${senha}', 'true')
+				INSERT INTO security.usuario (nome, email, cpf_cnpj, senha, ativo, perfil_id) VALUES
+						('Admin', '${email}', '12345678900', '${senha}', 'true', (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}'))
 		`)
-
-		/** --------------
-		@USUÁRIO_PERFIL
-		-------------- */
-		// INSERÇÃO DE USUÁRIOS NO PERFIL ADMIN
-		await queryRunner.query(`
-			INSERT INTO security.usuario_perfil (usuario_id, perfil_id) VALUES
-				((SELECT id FROM security.usuario WHERE cpf_cnpj = '12345678909'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}'))
-		`)
+		
 	}
 
 	public async down(queryRunner: QueryRunner): Promise<void> {
