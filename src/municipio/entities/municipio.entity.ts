@@ -23,7 +23,7 @@ export class Municipio {
     @JoinColumn({ name: 'estado_id' })
     estado: Estado;
 
-    @OneToMany(() => Propriedade, propriedade => propriedade.municipio)
+    @OneToMany(() => Propriedade, propriedade => propriedade.cidade)
 	propriedades: Propriedade[];
 
 }

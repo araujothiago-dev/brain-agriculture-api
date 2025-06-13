@@ -22,13 +22,13 @@ export class Propriedade extends BaseEntity {
     cidade: Municipio;
 
     @Column({ nullable: false, type: 'float' })
-    area_total: number;
+    areaTotal: number;
 
     @Column({ nullable: false, type: 'float' })
-    area_agricultavel: number;
+    areaAgricultavel: number;
 
     @Column({ nullable: false, type: 'float' })
-    area_vegetacao: number;
+    areaVegetacao: number;
 
     @Column({ nullable: false, default: true })
     ativo?: boolean;
@@ -36,10 +36,6 @@ export class Propriedade extends BaseEntity {
     @ManyToOne(() => Produtor, produtor => produtor.propriedades)
     @JoinColumn({ name: 'produtor_id' })
     produtor: Produtor;
-
-    @ManyToOne(() => Municipio, municipio => municipio.propriedades, { eager: true, nullable: false })
-    @JoinColumn({ name: 'municipio_id' })
-    municipio: Municipio;
 
     @OneToMany(() => PropriedadeCulturaSafra, pcs => pcs.propriedade)
     culturasSafras: PropriedadeCulturaSafra[];

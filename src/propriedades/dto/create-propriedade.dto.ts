@@ -11,20 +11,20 @@ export class CreatePropriedadeDto {
     nome: string;
 
     @Type(() => IdDto)
-    @ValidateNested({ message: " O id do 'municipio' deve ser informado." })
+    @ValidateNested({ message: " O id da 'cidade' deve ser informado." })
     cidade: Municipio;
 
     @IsNotEmpty({ message: "A 'área total' deve ser informada." })
     @IsNumber({}, { message: "A 'área total' deve ser um número." })
-    area_total: number;
+    areaTotal: number;
 
     @IsNotEmpty({ message: "A 'área agricultável' deve ser informada." })
     @IsNumber({}, { message: "A 'área agricultável' deve ser um número." })
-    area_agricultavel: number;
+    areaAgricultavel: number;
 
     @IsNotEmpty({ message: "A 'área de vegetação' deve ser informada." })
     @IsNumber({}, { message: "A 'área de vegetação' deve ser um número." })
-    area_vegetacao: number;
+    areaVegetacao: number;
 
     @IsOptional()
     @IsBoolean({ message: "O 'ativo' deve ser verdadeiro ou falso." })
