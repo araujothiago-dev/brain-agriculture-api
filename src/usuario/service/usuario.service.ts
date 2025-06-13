@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Perfil } from 'src/perfil/entities/perfil.entity';
@@ -8,7 +7,8 @@ import { IdDto } from 'src/utils/id.dto';
 import { PaginationInterface } from 'src/utils/interface/pagination.interface';
 import { PassVerify } from 'src/utils/pass-verify/passVerify';
 import { ResponseGeneric } from 'src/utils/response.generic';
-import { DataSource, ILike, In, Repository } from 'typeorm';
+import { DataSource, ILike, Repository } from 'typeorm';
+import { CpfCnpjVerify } from '../../utils/cpf-cnpj-verify/cpf-cnpj-verify';
 import { CreateUsuarioDto } from '../dto/create-usuario.dto';
 import { UpdateUsuarioDto } from '../dto/update-usuario.dto';
 import { Usuario } from '../entities/usuario.entity';
@@ -22,14 +22,37 @@ export class UsuarioService {
     private usuarioRepository: Repository<Usuario>,
     private dataSource: DataSource,
     private passVerify: PassVerify,
-    private jwtService: JwtService
+    private cpfCnpjVerify: CpfCnpjVerify,
   ) { }
 
   async create(body: CreateUsuarioDto) {
     try {
+
+      if (!(await this.cpfCnpjVerify.cpfCnpjVerify(body.cpfCnpj))) {
+        throw 'CPF/CNPJ inválido.';
+      }
+
+      const usuarioCheck = await this.usuarioRepository.findOne({
+        loadEagerRelations: false,
+        where: [
+          { cpfCnpj: body.cpfCnpj.trim() },
+          { email: body.email.trim().toLowerCase() }
+        ],
+        select: ['id', 'idPublic', 'email'],
+      });
+
+      if (usuarioCheck?.cpfCnpj == body.cpfCnpj.replace(/[^0-9]/g, "").trim()) {
+        throw 'Usuário já cadastrado com o mesmo CPF/CNPJ.';
+      }
+
+      if (usuarioCheck?.email.trim().toLowerCase() == body.email.trim().toLowerCase()) {
+        throw 'Usuário já cadastrado com o mesmo e-mail.';
+      }
+
       if (!(await this.passVerify.passVerify(body.senha))) {
         throw 'Senha deve ter no mínimo 8 caracteres e conter ao menos 1 número, 1 letra minúscula, 1 letra maiúscula e 1 caractere especial. '
       }
+
 
       body.senha = await bcrypt.hash(body.senha, Number(process.env.BCRYPT_SALT_ROUNDS));
 
@@ -37,11 +60,11 @@ export class UsuarioService {
 
       body.cpfCnpj = body.cpfCnpj.replace(/[^0-9]/g, "").trim();
 
-      const perfis: Perfil[] = await this.dataSource.getRepository(Perfil).findBy({ id: In(body.perfil.map(p => p.id)) });
-      
-      if (perfis.length == 0) {
+      const perfil = await this.dataSource.getRepository(Perfil).findOneBy({ id: body.perfil.id });
+
+      if (perfil == null) {
         throw 'Nenhum perfil encontrado.';
-      }      
+      }
 
       const usuario = await this.usuarioRepository.save(body);
 
@@ -442,5 +465,5 @@ export class UsuarioService {
       throw new HttpException({ message: 'Não foi possível deletar o Usuário. ', code: error?.code, erro: error }, HttpStatus.NOT_FOUND)
     }
   }
- 
+
 }

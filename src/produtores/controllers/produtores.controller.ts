@@ -17,7 +17,6 @@ export class ProdutoresController {
   constructor(private readonly produtoresService: ProdutoresService) {}
 
   @Post()
-  @UseGuards(PermissionGuard(ProdutorPermission.MODIFICAR_PRODUTOR))
   async create(@Body() createProdutoreDto: CreateProdutoreDto): Promise<ResponseGeneric<Produtor>> {
     return await this.produtoresService.create(createProdutoreDto);
   }

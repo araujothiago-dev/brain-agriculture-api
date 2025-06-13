@@ -1,13 +1,14 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import PerfilEnum from 'src/perfil/enums/perfil.enum';
+import { CpfCnpjVerify } from 'src/utils/cpf-cnpj-verify/cpf-cnpj-verify';
+import { PaginationInterface } from 'src/utils/interface/pagination.interface';
+import { ResponseGeneric } from 'src/utils/response.generic';
+import { DataSource, ILike, Repository } from 'typeorm';
+import { UsuarioService } from '../../usuario/service/usuario.service';
 import { CreateProdutoreDto } from '../dto/create-produtor.dto';
 import { UpdateProdutoreDto } from '../dto/update-produtor.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, ILike, Repository } from 'typeorm';
 import { Produtor } from '../entities/produtor.entity';
-import { ResponseGeneric } from 'src/utils/response.generic';
-import { PaginationInterface } from 'src/utils/interface/pagination.interface';
-import * as bcrypt from 'bcrypt';
-import { Usuario } from 'src/usuario/entities/usuario.entity';
 
 @Injectable()
 export class ProdutoresService {
@@ -15,13 +16,15 @@ export class ProdutoresService {
     @InjectRepository(Produtor)
     private produtorRepository: Repository<Produtor>,
     private dataSource: DataSource,
-
+    private readonly usuarioService: UsuarioService,
+    private cpfCnpjVerify: CpfCnpjVerify,
   ) { }
 
   async create(body: CreateProdutoreDto) {
     try {
-      if (body.cpfCnpj) {
-        body.cpfCnpj = body.cpfCnpj.replace(/[^0-9]/g, "").trim();
+
+      if (!(await this.cpfCnpjVerify.cpfCnpjVerify(body.cpfCnpj))) {
+        throw 'CPF/CNPJ inválido.';
       }
 
       const existingProdutor = await this.produtorRepository.findOne({
@@ -32,9 +35,40 @@ export class ProdutoresService {
         throw 'Produtor com o mesmo CPF/CNPJ já cadastrado.';
       }
 
+      if (body.usuario) {
+        const usuario = body.usuario;
+
+        if (!usuario) {
+          throw 'Usuário não informado.';
+        }
+
+        usuario.nome = body.nome;
+        usuario.cpfCnpj = body.cpfCnpj;
+        usuario.perfil.nome = PerfilEnum.CLIENTE;
+
+        const usuarioSave = await this.usuarioService.create(usuario);
+
+        if (!usuarioSave || !usuarioSave.data) {
+          throw 'Erro ao cadastrar usuário.';
+        }
+
+        body.usuario.id = usuarioSave.data.id;
+      }
+
       const produtor = await this.produtorRepository.save(body);
 
-      const produtorReturn = await this.produtorRepository.findOneBy({ id: produtor.id });
+      const produtorReturn = await this.produtorRepository.findOne({
+        where: { id: produtor.id },
+        relations: {
+          usuario: true,
+          propriedades: {
+            culturasSafras: {
+              cultura: true,
+              safra: true
+            }
+          }
+        }
+      });
 
       if (!produtorReturn) {
         throw 'Erro ao buscar o produtor.';
@@ -144,9 +178,12 @@ export class ProdutoresService {
         throw 'Não foi encontrado Produtor com esta identificação: ' + idPublic;
       }
 
-      const bodyUpdate: Produtor = { ...produtorReturne, ...body };
+      /**
+       * TODO: verificar bodyUpdate
+       */
+      // const bodyUpdate: Produtor = { ...produtorReturne, ...body };
 
-      await queryRunner.manager.save(Produtor, bodyUpdate);
+      // await queryRunner.manager.save(Produtor, bodyUpdate);
 
       const produtor = await queryRunner.manager.findOneBy(Produtor, { idPublic: idPublic })
 

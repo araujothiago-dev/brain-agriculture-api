@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from './entities/usuario.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { PassVerify } from 'src/utils/pass-verify/passVerify';
+import { CpfCnpjVerify } from 'src/utils/cpf-cnpj-verify/cpf-cnpj-verify';
 // import { UsuarioSubscriber } from './subscriber/usuario.subscriber';
 
 @Module({
@@ -13,7 +14,7 @@ import { PassVerify } from 'src/utils/pass-verify/passVerify';
     JwtModule.register({}),
   ],
   controllers: [UsuarioController],
-  providers: [UsuarioService, PassVerify],
+  providers: [UsuarioService, PassVerify, CpfCnpjVerify],
   exports: [UsuarioService]
 })
 export class UsuarioModule {}
