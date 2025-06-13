@@ -17,6 +17,9 @@ export class Propriedade extends BaseEntity {
     @Column({ nullable: false })
     nome: string;
 
+    @Column({ nullable: false, unique: true })
+    matricula: number;
+
     @ManyToOne(() => Municipio, municipio => municipio.propriedades, { eager: true, nullable: false })
     @JoinColumn({ name: 'cidade_id' })
     cidade: Municipio;

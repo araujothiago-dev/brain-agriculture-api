@@ -4,11 +4,16 @@ import { Cultura } from "src/culturas/entities/cultura.entity";
 import { Municipio } from "src/municipio/entities/municipio.entity";
 import { Produtor } from "src/produtores/entities/produtor.entity";
 import { IdDto } from "src/utils/id.dto";
+import { CulturaSafraInputDto } from "./create-propriedade-cultura.dto";
 
 export class CreatePropriedadeDto {
     @IsNotEmpty({ message: "O 'nome' deve ser informado." })
     @MinLength(4, { message: "O 'nome' deve ser válido." })
     nome: string;
+
+    @IsNotEmpty({ message: "A 'matrícula do imóvel' deve ser informada." })
+    @IsNumber({}, { message: "A 'matrícula do imóvel' deve ser um número." })
+    matricula: number;
 
     @Type(() => IdDto)
     @ValidateNested({ message: " O id da 'cidade' deve ser informado." })
@@ -35,9 +40,9 @@ export class CreatePropriedadeDto {
     produtor: Produtor;
 
     @IsArray()
-    @Type(() => IdDto)
-    @ValidateNested({ message: " O id da 'cultura' deve ser informado."})
-    culturas: Cultura[];
+    @Type(() => CulturaSafraInputDto)
+    @ValidateNested({ each: true })
+    culturas: CulturaSafraInputDto[];
 
     @IsOptional()
     @IsString({ message: "O 'createdBy' deve ser uma string." })
