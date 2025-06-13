@@ -5,10 +5,10 @@ import { IdDto } from "src/utils/id.dto";
 export class CulturaSafraInputDto {
   @Type(() => IdDto)
   @ValidateNested()
-  id: IdDto;
+  culturaId: IdDto;
 
   @IsOptional()
   @Type(() => IdDto)
   @ValidateNested()
-  safras?: IdDto;
+  safrasId?: IdDto;
 }

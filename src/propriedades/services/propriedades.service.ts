@@ -54,14 +54,14 @@ export class PropriedadesService {
 
         await Promise.all(
           body.culturas.map(async (cultura) => {
-            const culturaId = cultura.id?.id;
-            if (cultura.id) {
+            const culturaId = cultura.culturaId.id;
+            if (cultura.culturaId) {
               const existente = await culturaRepository.findOne({ where: { id: culturaId } });
               return existente ?? await culturaRepository.save({ id: culturaId });
             }
             return await culturaRepository.save({
-              id: cultura.id,
-              safras: cultura.safras,
+              id: cultura.culturaId,
+              safras: cultura.safrasId,
             });
           })
         );
@@ -78,16 +78,16 @@ export class PropriedadesService {
         const safraRepository = this.dataSource.getRepository(Safra);
 
         for (const culturaInput of body.culturas) {
-          const cultura = await culturaRepository.findOne({ where: { id: culturaInput.id.id } });
+          const cultura = await culturaRepository.findOne({ where: { id: culturaInput.culturaId.id } });
           if (!cultura) {
-            throw `Cultura de ID ${culturaInput.id} não encontrada.`;
+            throw `Cultura de ID ${culturaInput.culturaId} não encontrada.`;
           }
 
           let safra: Safra | undefined;
-          if (culturaInput.safras?.id) {
-            const safraResult = await safraRepository.findOne({ where: { id: culturaInput.safras.id } });
+          if (culturaInput.safrasId?.id) {
+            const safraResult = await safraRepository.findOne({ where: { id: culturaInput.safrasId.id } });
             if (!safraResult) {
-              throw `Safra de ID ${culturaInput.safras.id} não encontrada.`;
+              throw `Safra de ID ${culturaInput.safrasId.id} não encontrada.`;
             }
             safra = safraResult;
           }
@@ -267,14 +267,14 @@ export class PropriedadesService {
 
         await Promise.all(
           body.culturas.map(async (cultura) => {
-            const culturaId = cultura.id?.id;
-            if (cultura.id) {
+            const culturaId = cultura.culturaId?.id;
+            if (cultura.culturaId) {
               const existente = await culturaRepository.findOne({ where: { id: culturaId } });
               return existente ?? await culturaRepository.save({ id: culturaId });
             }
             return await culturaRepository.save({
-              id: cultura.id,
-              safras: cultura.safras,
+              id: cultura.culturaId,
+              safras: cultura.safrasId,
             });
           })
         );
