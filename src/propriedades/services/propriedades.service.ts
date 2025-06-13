@@ -71,7 +71,6 @@ export class PropriedadesService {
 
       await queryRunner.commitTransaction();
 
-      // Salva as culturas relacionadas na tabela de junção
       if (body.culturas?.length) {
         const pcsRepository = this.dataSource.getRepository(PropriedadeCulturaSafra);
         const culturaRepository = this.dataSource.getRepository(Cultura);
@@ -288,13 +287,59 @@ export class PropriedadesService {
         throw 'Não foi encontrada Propriedade com esta identificação: ' + idPublic;
       }
 
+      if (body.culturas?.length) {
+        const culturaRepository = this.dataSource.getRepository(Cultura);
+
+        await Promise.all(
+          body.culturas.map(async (cultura) => {
+            const culturaId = cultura.culturaId.id;
+            if (cultura.culturaId) {
+              const existente = await culturaRepository.findOne({ where: { id: culturaId } });
+              return existente ?? await culturaRepository.save({ id: culturaId });
+            }
+            return await culturaRepository.save({
+              id: cultura.culturaId,
+              safras: cultura.safrasId,
+            });
+          })
+        );
+      }
+
       const bodyUpdate: Propriedade = { ...propriedadeReturne, ...body };
 
-      await queryRunner.manager.save(Propriedade, bodyUpdate);
+      const propriedade = await queryRunner.manager.save(Propriedade, bodyUpdate);
 
-      const propriedade = await queryRunner.manager.findOneBy(Propriedade, { idPublic: idPublic })
+      const propriedadeReturn = await queryRunner.manager.findOneBy(Propriedade, { idPublic: idPublic })
 
       await queryRunner.commitTransaction();
+
+      if (body.culturas?.length) {
+        const pcsRepository = this.dataSource.getRepository(PropriedadeCulturaSafra);
+        const culturaRepository = this.dataSource.getRepository(Cultura);
+        const safraRepository = this.dataSource.getRepository(Safra);
+
+        for (const culturaInput of body.culturas) {
+          const cultura = await culturaRepository.findOne({ where: { id: culturaInput.culturaId.id } });
+          if (!cultura) {
+            throw `Cultura de ID ${culturaInput.culturaId} não encontrada.`;
+          }
+
+          let safra: Safra | undefined;
+          if (culturaInput.safrasId?.id) {
+            const safraResult = await safraRepository.findOne({ where: { id: culturaInput.safrasId.id } });
+            if (!safraResult) {
+              throw `Safra de ID ${culturaInput.safrasId.id} não encontrada.`;
+            }
+            safra = safraResult;
+          }
+
+          await pcsRepository.save({
+            propriedade,
+            cultura,
+            safra: safra,
+          });
+        }
+      }
 
       return new ResponseGeneric<Propriedade>(propriedade);
     } catch (error) {
