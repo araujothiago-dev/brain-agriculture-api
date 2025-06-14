@@ -44,7 +44,7 @@ require('dotenv').config();
       retryAttempts: 1000,
       // logging: ['query', 'error'],
     }),
-    ProdutoresModule, 
+    ProdutoresModule,
     PropriedadesModule, 
     SafrasModule, 
     CulturasModule,

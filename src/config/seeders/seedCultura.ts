@@ -1,7 +1,16 @@
+import { Logger } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from 'src/app.module';
+import { CreateCulturaDto } from 'src/culturas/dto/create-cultura.dto';
 import { Cultura } from 'src/culturas/entities/cultura.entity';
+import { CulturasService } from 'src/culturas/services/culturas.service';
 import { DataSource } from 'typeorm';
 
 export async function seedCultura(dataSource: DataSource) {
+    const logger = new Logger('SeedCulturas');
+    const app = await NestFactory.createApplicationContext(AppModule);
+    const culturasServices = app.get(CulturasService);
+
     const culturas = [
         { nome: 'Soja', ativo: true },
         { nome: 'Milho', ativo: true },
@@ -12,9 +21,21 @@ export async function seedCultura(dataSource: DataSource) {
     ];
 
     for (const culturaData of culturas) {
-        const exists = await dataSource.getRepository(Cultura).findOne({ where: { nome: culturaData.nome } });
-        if (!exists) {
-            await dataSource.getRepository(Cultura).save(culturaData);
+        const logger = new Logger('SeedCulturas');
+        logger.log(`Inserindo cultura ${culturaData.nome}...`);
+        
+        const existente = await dataSource.getRepository(Cultura).findOne({ where: { nome: culturaData.nome } });
+        if (!existente) {
+            try {
+                await culturasServices.create(culturaData as CreateCulturaDto);
+                logger.log(`Cultura ${culturaData.nome} criada com sucesso.`);
+            } catch (error) {
+                logger.error(`Erro ao inserir cultura ${culturaData.nome}`, error?.response?.erro || error.message);
+            }
+        } else {
+            logger.log(`Cultura ${culturaData.nome} já existe, pulando inserção.`);
         }
     }
+    logger.log('Seed de culturas concluído.');
+    await app.close();
 }
