@@ -89,9 +89,149 @@ Após iniciar os containers, a aplicação estará disponível em:
 
 ```
 http://localhost:3000
+
+## 🔑 Autenticação e Cadastro
+
+### ✨ Login
+
+```http
+POST /auth/login
 ```
 
-Você pode testar endpoints usando Postman, Insomnia ou navegador, dependendo das rotas disponíveis.
+```json
+{
+  "email": "mariasouza@gmail.com",
+  "senha": "An123456*"
+}
+```
+
+---
+
+### ✍️ Cadastro de Produtor
+
+```http
+POST /produtores
+```
+
+```json
+{
+  "nome": "Maria Souza",
+  "cpfCnpj": "84.852.610/0001-03",
+  "usuario": {
+    "email": "mariasouza@gmail.com",
+    "senha": "An123456*",
+    "ativo": true,
+    "perfil": {
+      "id": 2
+    }
+  }
+}
+```
+
+### ✏️ Atualizar Produtor
+
+```http
+PUT /produtores/{id}
+```
+
+### ❌ Remover Produtor
+
+```http
+DELETE /produtores/{id}
+```
+
+### 🔍 Buscar um Produtor
+
+```http
+GET /produtores/{id}
+```
+
+### 📃 Buscar Todos os Produtores
+
+```http
+GET /produtores/:page/:size
+```
+
+### 🔢 Buscar com Filtro
+
+```http
+GET /produtores/:page/:size/search/:parameter
+```
+
+---
+
+### ⛺ Cadastro de Propriedade
+
+```http
+POST /propriedades
+```
+
+```json
+{
+  "nome": "Fazenda Santa Maria",
+  "cidade": {
+    "id": 1
+  },
+  "areaTotal": 1500,
+  "areaAgricultavel": 1200,
+  "areaVegetacao": 300,
+  "matricula": 12366,
+  "produtor": {
+    "id": 7
+  },
+  "culturas": [
+    { "culturaId": { "id": 5 }, "safrasId": { "id": 2 } },
+    { "culturaId": { "id": 6 }, "safrasId": { "id": 2 } }
+  ]
+}
+```
+
+---
+
+### 🌿 Cadastro de Cultura
+
+```http
+POST /culturas
+```
+
+```json
+{
+  "nome": "Mandioca 2"
+}
+```
+
+### 🌾 Cadastro de Safra
+
+```http
+POST /safras
+```
+
+```json
+{
+  "nome": "Safra 2020"
+}
+```
+
+---
+
+### 📊 Dashboards
+
+#### Admin
+
+```http
+GET /dashboard/admin
+```
+
+#### Por Produtor
+
+```http
+GET /dashboard/produtor/{idProdutor}
+```
+
+---
+
+Esses endpoints podem ser testados usando ferramentas como **Postman** ou **Insomnia**, sempre incluindo o token JWT (obtido no login) no header `Authorization: Bearer {token}` quando exigido.
+```
 
 ## Run tests
 

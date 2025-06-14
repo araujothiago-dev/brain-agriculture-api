@@ -26,12 +26,12 @@ async function bootstrap() {
     }),
   );
 
-  // if (process.env.NODE_ENV !== 'PRODUCTION') {
-  //   await seedSafra(dataSource);
-  //   await seedCultura(dataSource);
-  //   await seedProdutores(dataSource);
-  //   await seedPropriedades(dataSource); 
-  // }
+  if (process.env.NODE_ENV !== 'PRODUCTION') {
+    await seedSafra(dataSource);
+    await seedCultura(dataSource);
+    await seedProdutores(dataSource);
+    // await seedPropriedades(dataSource); 
+  }
 
   await app.listen(Number(process.env.PORT));
 }
