@@ -32,22 +32,22 @@ export class UsuarioController {
     return await this.usuarioService.findAllAdmin(parameter, page, size);
   }
 
-  @Get('gestor/tipo/:page/:size/search/:parameter')
+  @Get('parceiro/tipo/:page/:size/search/:parameter')
   @UseGuards(PermissionGuard(UsuarioPermission.LER_USUARIO, false))
-  async findAllGestor(@Param('page') page: number, @Param('size') size: number, @Param('parameter') parameter: string = '', @Query('idPublic') idPublic: string = ''): Promise<ResponseGeneric<PaginationInterface<Usuario[]>>> {
-    return await this.usuarioService.findAllGestor(parameter, idPublic, page, size);
+  async findAllParceiro(@Param('page') page: number, @Param('size') size: number, @Param('parameter') parameter: string = '', @Query('idPublic') idPublic: string = ''): Promise<ResponseGeneric<PaginationInterface<Usuario[]>>> {
+    return await this.usuarioService.findAllParceiro(parameter, idPublic, page, size);
   }
 
-  @Get('revisor/:page/:size/search/:parameter')
+  @Get('cliente/:page/:size/search/:parameter')
   @UseGuards(PermissionGuard(UsuarioPermission.LER_USUARIO_CLIENTE, false))
-  async findAllRevisor(@Param('page') page: number, @Param('size') size: number, @Param('parameter') parameter: string = ''): Promise<ResponseGeneric<PaginationInterface<Usuario[]>>> {
-    return await this.usuarioService.findAllRevisor(parameter, page, size);
+  async findAllCliente(@Param('page') page: number, @Param('size') size: number, @Param('parameter') parameter: string = ''): Promise<ResponseGeneric<PaginationInterface<Usuario[]>>> {
+    return await this.usuarioService.findAllCliente(parameter, page, size);
   }
 
   @Get('simples/:idPublicGrupo')
   @UseGuards(PermissionGuard(UsuarioPermission.LER_USUARIO_CLIENTE, false))
-  async findAllRevisorSimple(@Param('idPublicGrupo') idPublicGrupo: string): Promise<ResponseGeneric<Usuario[]>> {
-    return await this.usuarioService.findAllRevisorSimple(idPublicGrupo);
+  async findAllClienteSimple(@Param('idPublicGrupo') idPublicGrupo: string): Promise<ResponseGeneric<Usuario[]>> {
+    return await this.usuarioService.findAllClienteSimple(idPublicGrupo);
   }
 
   @Get(':idPublic')
@@ -58,14 +58,14 @@ export class UsuarioController {
 
   @Patch(':idPublic')
   @UseGuards(PermissionGuard(UsuarioPermission.MODIFICAR_USUARIO, false))
-  async update(@Param() {idPublic}: FindOneParams, @Body() body: UpdateUsuarioDto, @Body('userToken') userToken: IdDto): Promise<ResponseGeneric<Usuario>> {
-    return await this.usuarioService.update(idPublic, body, userToken);
+  async update(@Param() {idPublic}: FindOneParams, @Body() body: UpdateUsuarioDto): Promise<ResponseGeneric<Usuario>> {
+    return await this.usuarioService.update(idPublic, body);
   }
 
   @Delete(':idPublic')
   @UseGuards(PermissionGuard(UsuarioPermission.MODIFICAR_USUARIO, false))
-  remove(@Param() {idPublic}: FindOneParams, @Body('userToken') userToken: IdDto): Promise<ResponseGeneric<Usuario>> {
-    return this.usuarioService.remove(idPublic, userToken);
+  remove(@Param() {idPublic}: FindOneParams): Promise<ResponseGeneric<Usuario>> {
+    return this.usuarioService.remove(idPublic);
   }
 
 }

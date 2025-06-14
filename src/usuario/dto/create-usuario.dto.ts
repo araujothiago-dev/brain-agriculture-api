@@ -1,18 +1,21 @@
 import { IsCPFOrCNPJ } from "brazilian-class-validator";
-import { Type } from "class-transformer";
-import { ArrayMinSize, IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, ValidateIf, ValidateNested } from "class-validator";
 import { Perfil } from "src/perfil/entities/perfil.entity";
 import { IdDto } from "src/utils/id.dto";
 
 export class CreateUsuarioDto {
+    @ValidateIf((obj) => obj.nome !== undefined)
     @IsNotEmpty({ message: "O 'nome' deve ser informado." })
     @MinLength(4, { message: "O 'nome' deve ser valido." })
     nome: string;
 
     @IsNotEmpty({ message: "O 'e-mail' deve ser informado." })
+    @Transform(({ value }) => value?.trim())
     @IsEmail({}, { message: "O 'e-mail' deve ser valido." })
     email: string;
 
+    @ValidateIf((obj) => obj.cpfCnpj !== undefined)
     @IsNotEmpty({ message: "O 'CPF/CNPJ' deve ser informado." })
     @IsCPFOrCNPJ({ message: "O 'CPF/CNPJ' deve ser válido." })
     cpfCnpj: string;

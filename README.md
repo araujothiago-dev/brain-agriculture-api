@@ -1,26 +1,3 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
@@ -42,6 +19,218 @@ $ npm run start:dev
 
 # production mode
 $ npm run start:prod
+```
+
+## 🚀 Executando o projeto com Docker
+
+Este projeto já está configurado para ser executado com **Docker** e **docker-compose**, incluindo o banco de dados PostgreSQL.
+
+### ✅ Pré-requisitos
+
+Antes de executar, certifique-se de ter instalado:
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- [Node.js](https://nodejs.org/) (caso queira executar localmente fora do Docker)
+- [DBeaver](https://dbeaver.io/) (opcional, para acessar visualmente o banco de dados)
+
+### ⚙️ Como executar com Docker
+
+```bash
+# Subir os containers com a API e o banco de dados
+docker-compose up --build
+```
+
+Isso irá:
+
+- Criar um container com o PostgreSQL na porta `5432`
+- Construir a imagem da API e iniciar em modo de desenvolvimento na porta `3000`
+
+### 🐘 Acessando o banco de dados PostgreSQL
+
+Se quiser acessar o banco via **DBeaver** ou outro cliente, use as credenciais abaixo:
+
+| Parâmetro      | Valor               |
+| -------------- | ------------------- |
+| Host           | `localhost`         |
+| Porta          | `5432`              |
+| Usuário        | `postgres`          |
+| Senha          | `123456`            |
+| Banco de dados | `brain_agriculture` |
+
+### 🚫 Parar os containers
+
+```bash
+docker-compose down
+```
+
+### 🔄 Reconstruir imagens do Docker
+
+```bash
+docker-compose up --build
+```
+
+### 📝 Variáveis de ambiente
+
+O arquivo `.env` já está configurado com:
+
+```env
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=123456
+POSTGRES_DATABASE=brain_agriculture
+```
+
+Essas variáveis são lidas automaticamente pela API para conectar ao banco de dados no container `db`.
+
+### 🧲 Testando a API
+
+Após iniciar os containers, a aplicação estará disponível em:
+
+```
+http://localhost:3000
+
+## 🔑 Autenticação e Cadastro
+
+### ✨ Login
+
+```http
+POST /auth/login
+```
+
+```json
+{
+  "email": "mariasouza@gmail.com",
+  "senha": "An123456*"
+}
+```
+
+---
+
+### ✍️ Cadastro de Produtor
+
+```http
+POST /produtores
+```
+
+```json
+{
+  "nome": "Maria Souza",
+  "cpfCnpj": "84.852.610/0001-03",
+  "usuario": {
+    "email": "mariasouza@gmail.com",
+    "senha": "An123456*",
+    "ativo": true,
+    "perfil": {
+      "id": 2
+    }
+  }
+}
+```
+
+### ✏️ Atualizar Produtor
+
+```http
+PUT /produtores/{id}
+```
+
+### ❌ Remover Produtor
+
+```http
+DELETE /produtores/{id}
+```
+
+### 🔍 Buscar um Produtor
+
+```http
+GET /produtores/{id}
+```
+
+### 📃 Buscar Todos os Produtores
+
+```http
+GET /produtores/:page/:size
+```
+
+### 🔢 Buscar com Filtro
+
+```http
+GET /produtores/:page/:size/search/:parameter
+```
+
+---
+
+### ⛺ Cadastro de Propriedade
+
+```http
+POST /propriedades
+```
+
+```json
+{
+  "nome": "Fazenda Santa Maria",
+  "cidade": {
+    "id": 1
+  },
+  "areaTotal": 1500,
+  "areaAgricultavel": 1200,
+  "areaVegetacao": 300,
+  "matricula": 12366,
+  "produtor": {
+    "id": 7
+  },
+  "culturas": [
+    { "culturaId": { "id": 5 }, "safrasId": { "id": 2 } },
+    { "culturaId": { "id": 6 }, "safrasId": { "id": 2 } }
+  ]
+}
+```
+
+---
+
+### 🌿 Cadastro de Cultura
+
+```http
+POST /culturas
+```
+
+```json
+{
+  "nome": "Mandioca 2"
+}
+```
+
+### 🌾 Cadastro de Safra
+
+```http
+POST /safras
+```
+
+```json
+{
+  "nome": "Safra 2020"
+}
+```
+
+---
+
+### 📊 Dashboards
+
+#### Admin
+
+```http
+GET /dashboard/admin
+```
+
+#### Por Produtor
+
+```http
+GET /dashboard/produtor/{idProdutor}
+```
+
+---
+
+Esses endpoints podem ser testados usando ferramentas como **Postman** ou **Insomnia**, sempre incluindo o token JWT (obtido no login) no header `Authorization: Bearer {token}` quando exigido.
 ```
 
 ## Run tests
@@ -96,3 +285,4 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+

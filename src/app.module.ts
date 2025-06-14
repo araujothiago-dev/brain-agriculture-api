@@ -13,6 +13,7 @@ import { UsuarioModule } from './usuario/usuario.module';
 import { AuthModule } from './auth/auth.module';
 import { PerfilModule } from './perfil/perfil.module';
 import { PermissionModule } from './permission/permission.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 require('dotenv').config();
 
@@ -53,8 +54,7 @@ require('dotenv').config();
     PermissionModule,
     UsuarioModule,
     AuthModule,
-
-
+    DashboardModule
   ],
   controllers: [],
   providers: [],

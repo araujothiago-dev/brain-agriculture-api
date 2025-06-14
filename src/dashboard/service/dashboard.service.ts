@@ -17,27 +17,34 @@ export class DashboardService {
       let dashboard: GetDashboardDto = new GetDashboardDto();
 
       const preDashboard = await this.dataSource.createQueryBuilder()
-        .select(["Count(propriedade.id) as propriedades, Sum(propriedade.area_total) as totalHectares, Sum(propriedade.area_agricultavel) as area_agricultavel, Sum(propriedade.area_vegetacao) as area_vegetacao"]).from(Propriedade, "propriedade")
-        .addSelect(subQuery => {
-          return subQuery
-            .select('COUNT(DISTINCT propriedade.estado)', 'totalEstados')
-            .from(Propriedade, 'propriedade');
-        }, 'totalEstados')
-        .addSelect(subQuery => {
-          return subQuery
-            .select('COUNT(DISTINCT cultura.nome)', 'totalCulturas')
-            .from(Propriedade, 'propriedade')
-            .leftJoin('propriedade.culturas', 'cultura');
-        }, 'totalCulturas')
-        // .from(Propriedade, 'propriedade')
-        .getRawOne()
+      .select([
+        'COUNT(p.id) AS propriedades',
+        'SUM(p.area_total) AS total_hectares',
+        'SUM(p.area_agricultavel) AS area_agricultavel',
+        'SUM(p.area_vegetacao) AS area_vegetacao',
+      ]).from('propriedades', "p")
+      .addSelect(subQuery => {
+        return subQuery
+          .select('COUNT(DISTINCT e.id)', 'totalEstados')
+          .from('propriedades', 'p3')
+          .leftJoin('municipio', 'm', 'p3.cidade_id = m.id')
+          .leftJoin('estado', 'e', 'm.estado_id = e.id');
+      }, 'totalEstados')
+      .addSelect(subQuery => {
+        return subQuery
+          .select('COUNT(DISTINCT c.nome)', 'totalCulturas')
+          .from('propriedades', 'p2')
+          .leftJoin('propriedade_cultura_safra', 'pc', 'p2.id = pc.propriedade_id')
+          .leftJoin('culturas', 'c', 'pc.cultura_id = c.id');
+      }, 'totalCulturas')
+      .getRawOne();
 
       dashboard.totalFazendas = Number(preDashboard.propriedades);
       dashboard.porEstado = Number(preDashboard.totalEstados);
       dashboard.porCultura = Number(preDashboard.totalCulturas);
-      dashboard.area_agricultavel = Number(preDashboard.area_agricultavel);
-      dashboard.area_vegetacao = Number(preDashboard.area_vegetacao);
-      dashboard.totalHectares = (Number(preDashboard.totalHectares));
+      dashboard.areaAgricultavel = Number(preDashboard.area_agricultavel);
+      dashboard.areaVegetacao = Number(preDashboard.area_vegetacao);
+      dashboard.totalHectares = (Number(preDashboard.total_hectares));
 
       return new ResponseGeneric<GetDashboardDto>(dashboard);
     } catch (error) {
@@ -46,34 +53,44 @@ export class DashboardService {
     }
   }
 
-  async findAllProdutor(idProdutor: string) {
+  async findAllProdutor(idProdutor: number) {
     try {
-
+      console.log(idProdutor);
+      
       let dashboard: GetDashboardDto = new GetDashboardDto();
 
       const preDashboard = await this.dataSource.createQueryBuilder()
-        .select(["Count(propriedade.id) as propriedades, Sum(propriedade.area_total) as totalHectares, Sum(propriedade.area_agricultavel) as area_agricultavel, Sum(propriedade.area_vegetacao) as area_vegetacao"]).from(Propriedade, "propriedade")
-        .where("propriedade.idProdutor = :idProdutor", { idProdutor })
+        .select([
+          'COUNT(p.id) AS propriedades',
+          'SUM(p.area_total) AS total_hectares',
+          'SUM(p.area_agricultavel) AS area_agricultavel',
+          'SUM(p.area_vegetacao) AS area_vegetacao',
+        ]).from('propriedades', "p")
         .addSelect(subQuery => {
           return subQuery
-            .select('COUNT(DISTINCT propriedade.estado)', 'totalEstados')
-            .from(Propriedade, 'propriedade');
+            .select('COUNT(DISTINCT e.id)', 'totalEstados')
+            .from('propriedades', 'p3')
+            .leftJoin('municipio', 'm', 'p3.cidade_id = m.id')
+            .leftJoin('estado', 'e', 'm.estado_id = e.id')
+            .where('p3.produtor_id = :idProdutor', { idProdutor });
         }, 'totalEstados')
         .addSelect(subQuery => {
           return subQuery
-            .select('COUNT(DISTINCT cultura.nome)', 'totalCulturas')
-            .from(Propriedade, 'propriedade')
-            .leftJoin('propriedade.culturas', 'cultura');
+            .select('COUNT(DISTINCT c.nome)', 'totalCulturas')
+            .from('propriedades', 'p2')
+            .leftJoin('propriedade_cultura_safra', 'pc', 'p2.id = pc.propriedade_id')
+            .leftJoin('culturas', 'c', 'pc.cultura_id = c.id')
+            .where('p2.produtor_id = :idProdutor', { idProdutor });
         }, 'totalCulturas')
-        // .from(Propriedade, 'propriedade')
-        .getRawOne()
+        .where('p.produtor_id = :idProdutor', { idProdutor })
+        .getRawOne();
 
       dashboard.totalFazendas = Number(preDashboard.propriedades);
       dashboard.porEstado = Number(preDashboard.totalEstados);
       dashboard.porCultura = Number(preDashboard.totalCulturas);
-      dashboard.area_agricultavel = Number(preDashboard.area_agricultavel);
-      dashboard.area_vegetacao = Number(preDashboard.area_vegetacao);
-      dashboard.totalHectares = (Number(preDashboard.totalHectares));
+      dashboard.areaAgricultavel = Number(preDashboard.area_agricultavel);
+      dashboard.areaVegetacao = Number(preDashboard.area_vegetacao);
+      dashboard.totalHectares = (Number(preDashboard.total_hectares));
 
       return new ResponseGeneric<GetDashboardDto>(dashboard);
     } catch (error) {

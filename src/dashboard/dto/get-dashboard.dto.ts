@@ -20,10 +20,10 @@ export class GetDashboardDto {
 
     @IsOptional()
     @IsNumber({}, { message: "A 'área agriculturavel' deve ser um número." })
-    area_agricultavel?: number;
+    areaAgricultavel?: number;
 
     @IsOptional()
     @IsNumber({}, { message: "A 'área vegetacao' deve ser um número." })
-    area_vegetacao?: number;
+    areaVegetacao?: number;
 
 }
