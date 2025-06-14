@@ -23,12 +23,25 @@ export class ProdutoresController {
 
   @Get(':page/:size/search/:parameter')
   @UseGuards(PermissionGuard(ProdutorPermission.LER_PRODUTOR))
-  async findAll(
+  async findAllByParameter(
     @Param('page') page: number, 
     @Param('size') size: number, 
     @Param('parameter') parameter: string = ''
   ): Promise<ResponseGeneric<PaginationInterface<Produtor[]>>> {
-    return await this.produtoresService.findAll(page, size, parameter);
+    console.log(page, size, parameter);
+    
+    return await this.produtoresService.findAllByParameter(page, size, parameter);
+  }
+
+  @Get(':page/:size')
+  @UseGuards(PermissionGuard(ProdutorPermission.LER_PRODUTOR))
+  async findAll(
+    @Param('page') page: number, 
+    @Param('size') size: number, 
+  ): Promise<ResponseGeneric<PaginationInterface<Produtor[]>>> {
+    console.log(page, size);
+    
+    return await this.produtoresService.findAll(page, size);
   }
 
   @Get('propriedade/:idPublicPropriedade')

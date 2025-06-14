@@ -9,6 +9,7 @@ import { UsuarioService } from '../../usuario/service/usuario.service';
 import { CreateProdutoreDto } from '../dto/create-produtor.dto';
 import { UpdateProdutoreDto } from '../dto/update-produtor.dto';
 import { Produtor } from '../entities/produtor.entity';
+import { Usuario } from 'src/usuario/entities/usuario.entity';
 
 @Injectable()
 export class ProdutoresService {
@@ -80,7 +81,7 @@ export class ProdutoresService {
     }
   }
 
-  async findAll(page: number, size: number, parameter?: string) {
+  async findAllByParameter(page: number, size: number, parameter: string = '') {
     try {
       const [produtores, total]: [Produtor[], number] = await this.produtorRepository.findAndCount({
         loadEagerRelations: false,
@@ -98,6 +99,31 @@ export class ProdutoresService {
             ativo: true,
           }
         ],
+        order: {
+          nome: 'ASC'
+        },
+        take: size || 10,
+        skip: (page - 1) * (size || 10)
+      });
+
+      return new ResponseGeneric<PaginationInterface<Produtor[]>>({
+        content: produtores,
+        total: total,
+        totalPages: Math.ceil(total / size)
+      });
+    } catch (error) {
+      throw new HttpException({ message: 'Não foi possível buscar os Produtores. ', code: error?.code, erro: error }, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async findAll(page: number, size: number) {
+    try {
+      const [produtores, total]: [Produtor[], number] = await this.produtorRepository.findAndCount({
+        loadEagerRelations: false,
+        relations: {
+          propriedades: true
+        },
+        select: ['id', 'idPublic', 'nome', 'cpfCnpj', 'ativo', 'propriedades'],
         order: {
           nome: 'ASC'
         },
@@ -178,12 +204,13 @@ export class ProdutoresService {
         throw 'Não foi encontrado Produtor com esta identificação: ' + idPublic;
       }
 
-      /**
-       * TODO: verificar bodyUpdate
-       */
-      // const bodyUpdate: Produtor = { ...produtorReturne, ...body };
+      const bodyUpdate: Produtor = { 
+        ...produtorReturne, 
+        ...body, 
+        usuario: body.usuario as Usuario
+      };
 
-      // await queryRunner.manager.save(Produtor, bodyUpdate);
+      await queryRunner.manager.save(Produtor, bodyUpdate);
 
       const produtor = await queryRunner.manager.findOneBy(Produtor, { idPublic: idPublic })
 
