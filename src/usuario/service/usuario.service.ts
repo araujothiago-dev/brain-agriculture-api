@@ -132,7 +132,7 @@ export class UsuarioService {
     }
   }
 
-  async findAllGestor(parameter: string, idPublic: string, page: number, size: number) {
+  async findAllParceiro(parameter: string, idPublic: string, page: number, size: number) {
     try {
       parameter = '%' + parameter + '%'
 
@@ -151,7 +151,7 @@ export class UsuarioService {
         }
       ].map((conditions) => {
         const r: any = { ...conditions };
-        if (idPublic != '') r.tipoGestor = { idPublic: idPublic };
+        if (idPublic != '') r.tipoParceiro = { idPublic: idPublic };
         return r;
       });
 
@@ -183,7 +183,7 @@ export class UsuarioService {
     }
   }
 
-  async findAllRevisor(parameter: string, page: number, size: number) {
+  async findAllCliente(parameter: string, page: number, size: number) {
     try {
       parameter = '%' + parameter + '%'
 
@@ -234,7 +234,7 @@ export class UsuarioService {
     }
   }
 
-  async findAllRevisorSimple(idPublicGrupo: string) {
+  async findAllClienteSimple(idPublicGrupo: string) {
     try {
       const usuario: Usuario[] = await this.usuarioRepository.find({
         loadEagerRelations: false,
@@ -286,7 +286,7 @@ export class UsuarioService {
     }
   }
 
-  async update(idPublic: string, body: UpdateUsuarioDto, userToken: IdDto) {
+  async update(idPublic: string, body: UpdateUsuarioDto) {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -309,10 +309,6 @@ export class UsuarioService {
         throw 'Não foi encontrado Usuário com esta identificação: ' + idPublic;
       }
 
-      if (usuarioCheck.id == userToken.id) {
-        throw 'Usuário sem autorização para modificar o próprio usuário.';
-      }
-
       const bodyUpdate: Usuario = { ...usuarioCheck, ...body };
 
       await queryRunner.manager.save(Usuario, bodyUpdate)
@@ -331,7 +327,7 @@ export class UsuarioService {
     }
   }
 
-  async updateRevisor(idPublic: string, body: UpdateUsuarioDto, userToken: IdDto) {
+  async updateCliente(idPublic: string, body: UpdateUsuarioDto) {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -357,10 +353,6 @@ export class UsuarioService {
         throw 'Não foi encontrado Usuário com esta identificação: ' + idPublic;
       }
 
-      if (usuarioCheck.id == userToken.id) {
-        throw 'Usuário sem autorização para modificar o próprio usuário.';
-      }
-
       const bodyUpdate: Usuario = { ...usuarioCheck, ...body };
 
       await queryRunner.manager.save(Usuario, bodyUpdate)
@@ -379,7 +371,7 @@ export class UsuarioService {
     }
   }
 
-  async updatePass(idPublic: string, body: UpdatePassDto, userToken: IdDto) {
+  async updatePass(idPublic: string, body: UpdatePassDto) {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -395,10 +387,6 @@ export class UsuarioService {
 
       if (!usuario) {
         throw 'Não foi encontrado Usuário com esta identificação: ' + idPublic;
-      }
-
-      if (usuario.id != userToken.id) {
-        throw 'Usuário sem autorização para modificar outros usuários.';
       }
 
       const compare = await bcrypt.compare(body.senha, usuario.senha);
@@ -427,7 +415,7 @@ export class UsuarioService {
     };
   }
 
-  async remove(idPublic: string, userToken: IdDto) {
+  async remove(idPublic: string) {
     try {
       const usuarioReturn = await this.usuarioRepository.findOne({
         loadEagerRelations: false,
@@ -442,10 +430,6 @@ export class UsuarioService {
 
       if (!usuarioReturn) {
         throw 'Não foi encontrado Usuário com esta identificação: ' + idPublic;
-      }
-
-      if (usuarioReturn.id == userToken.id) {
-        throw 'Usuário sem autorização para excluir o próprio usuário.';
       }
 
       const email = (process.env.ADMIN_USERNAME);
