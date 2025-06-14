@@ -434,7 +434,7 @@ export class UsuarioService {
         where: {
           idPublic
         },
-        select: ['id', 'idPublic', 'email', 'ativo', 'email'],
+        select: ['id', 'idPublic', 'email', 'ativo'],
         relations: {
           perfil: true
         }
