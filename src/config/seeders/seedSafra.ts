@@ -15,7 +15,7 @@ export async function seedSafra(dataSource: DataSource) {
         await dataSource.query(`
             TRUNCATE TABLE 
             "produtores",
-            "safra_cultura_safra", 
+            "propriedade_cultura_safra", 
             "safras", 
             "culturas", 
             "propriedades"

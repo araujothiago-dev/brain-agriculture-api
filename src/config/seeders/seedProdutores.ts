@@ -38,7 +38,7 @@ export async function seedProdutores(dataSource: DataSource) {
         },
         {
             nome: 'Carlos Pereira',
-            cpfCnpj: '22233344455',
+            cpfCnpj: '96.489.101/0001-47',
             usuario: {
                 email: 'carlospereira@gmail.com',
                 senha: 'An123456*',
