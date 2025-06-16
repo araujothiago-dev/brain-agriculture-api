@@ -9,33 +9,40 @@ import { DataSource } from 'typeorm';
 export async function seedCultura(dataSource: DataSource) {
     const logger = new Logger('SeedCulturas');
     const app = await NestFactory.createApplicationContext(AppModule);
-    const culturasServices = app.get(CulturasService);
 
-    const culturas = [
-        { nome: 'Soja', ativo: true },
-        { nome: 'Milho', ativo: true },
-        { nome: 'Algodão', ativo: true },
-        { nome: 'Arroz', ativo: true },
-        { nome: 'Feijão', ativo: true },
-        { nome: 'Cana-de-açúcar', ativo: true },
-    ];
+    try {
+        const culturasServices = app.get(CulturasService);
 
-    for (const culturaData of culturas) {
-        const logger = new Logger('SeedCulturas');
-        logger.log(`Inserindo cultura ${culturaData.nome}...`);
-        
-        const existente = await dataSource.getRepository(Cultura).findOne({ where: { nome: culturaData.nome } });
-        if (!existente) {
-            try {
-                await culturasServices.create(culturaData as CreateCulturaDto);
-                logger.log(`Cultura ${culturaData.nome} criada com sucesso.`);
-            } catch (error) {
-                logger.error(`Erro ao inserir cultura ${culturaData.nome}`, error?.response?.erro || error.message);
+        const culturas = [
+            { nome: 'Soja', ativo: true },
+            { nome: 'Milho', ativo: true },
+            { nome: 'Algodão', ativo: true },
+            { nome: 'Arroz', ativo: true },
+            { nome: 'Feijão', ativo: true },
+            { nome: 'Cana-de-açúcar', ativo: true },
+        ];
+
+        for (const culturaData of culturas) {
+            const logger = new Logger('SeedCulturas');
+            logger.log(`Inserindo cultura ${culturaData.nome}...`);
+
+            const existente = await dataSource.getRepository(Cultura).findOne({ where: { nome: culturaData.nome } });
+            if (!existente) {
+                try {
+                    await culturasServices.create(culturaData as CreateCulturaDto);
+                    logger.log(`Cultura ${culturaData.nome} criada com sucesso.`);
+                } catch (error) {
+                    logger.error(`Erro ao inserir cultura ${culturaData.nome}`, error?.response?.erro || error.message);
+                }
+            } else {
+                logger.log(`Cultura ${culturaData.nome} já existe, pulando inserção.`);
             }
-        } else {
-            logger.log(`Cultura ${culturaData.nome} já existe, pulando inserção.`);
         }
+        logger.log('Seed de culturas concluído.');
+    } catch (error) {
+        logger.error('Erro durante o seed de culturas', error.message);
+        throw error;
+    } finally {
+        await app.close();
     }
-    logger.log('Seed de culturas concluído.');
-    await app.close();
 }
