@@ -1,34 +1,34 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProdutoresService } from '../services/produtores.service';
-import { ProdutoresController } from './produtores.controller';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Produtor } from '../entities/produtor.entity';
 import { DataSource } from 'typeorm';
+import { UsuarioController } from './usuario.controller';
+import { UsuarioService } from '../service/usuario.service';
+import { Usuario } from '../entities/usuario.entity';
+import { PassVerify } from 'src/utils/pass-verify/passVerify';
 import { CpfCnpjVerify } from 'src/utils/cpf-cnpj-verify/cpf-cnpj-verify';
-import { UsuarioService } from 'src/usuario/service/usuario.service';
 
-describe('ProdutoresController', () => {
-  let controller: ProdutoresController;
-  let service: ProdutoresService;
-
-  const mockUsuarioService = {
-    find: jest.fn(),
-    save: jest.fn(),
-  };
+describe('UsuarioController', () => {
+  let controller: UsuarioController;
+  let service: UsuarioService;
 
   const mockRepository = {
     find: jest.fn(),
+    findOne: jest.fn(),
+    findOneBy: jest.fn(),
     save: jest.fn(),
-  }
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ProdutoresController],
+      controllers: [UsuarioController],
       providers: [
-        ProdutoresService,
+        UsuarioService,
         {
-          provide: getRepositoryToken(Produtor),
-          useValue: mockRepository
+          provide: getRepositoryToken(Usuario),
+          useValue: mockRepository,
         },
         {
           provide: DataSource,
@@ -37,9 +37,9 @@ describe('ProdutoresController', () => {
           },
         },
         {
-          provide: UsuarioService,
+          provide: PassVerify,
           useValue: {
-            verify: jest.fn().mockReturnValue(mockUsuarioService),
+            verify: jest.fn().mockReturnValue(mockRepository),
           },
         },
         {
@@ -51,8 +51,9 @@ describe('ProdutoresController', () => {
       ],
     }).compile();
 
-    controller = module.get<ProdutoresController>(ProdutoresController);
-    service = module.get<ProdutoresService>(ProdutoresService);
+    controller = module.get<UsuarioController>(UsuarioController);
+    service = module.get<UsuarioService>(UsuarioService);
+
   });
 
   it('should be defined', () => {
