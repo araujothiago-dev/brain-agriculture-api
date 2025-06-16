@@ -183,6 +183,7 @@ export class Init1650487910713 implements MigrationInterface {
 				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.MODIFICAR_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
 				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.LER_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
 				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
 				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.LER_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
 				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.MODIFICAR_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
 				((SELECT id FROM security.permission WHERE nome = '${DashboardPermission.LER_DASHBOARD}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}'))
@@ -203,9 +204,12 @@ export class Init1650487910713 implements MigrationInterface {
 				((SELECT id FROM security.permission WHERE nome = '${MunicipioPermission.LER_MUNICIPIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
 				((SELECT id FROM security.permission WHERE nome = '${EstadoPermission.LER_ESTADO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
 				((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.LER_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.MODIFICAR_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
 				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.LER_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
 				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.LER_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
 				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.LER_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.MODIFICAR_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
 				((SELECT id FROM security.permission WHERE nome = '${DashboardPermission.LER_DASHBOARD}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}'))
 		`)
 

@@ -30,7 +30,7 @@ async function bootstrap() {
     await seedSafra(dataSource);
     await seedCultura(dataSource);
     await seedProdutores(dataSource);
-    // await seedPropriedades(dataSource); 
+    await seedPropriedades(dataSource); 
   }
 
   await app.listen(Number(process.env.PORT));

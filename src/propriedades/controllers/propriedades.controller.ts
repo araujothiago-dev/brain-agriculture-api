@@ -8,6 +8,7 @@ import { Propriedade } from '../entities/propriedade.entity';
 import { PaginationInterface } from 'src/utils/interface/pagination.interface';
 import PermissionGuard from 'src/auth/guards/permission.guard';
 import PropriedadesPermission from '../enums/propriedadesPermission.enum';
+import { UpdatePropriedadeParceiroDto } from '../dto/update-propriedade-parceiro.dto copy';
 
 @ApiBearerAuth('access_token')
 @ApiTags('propriedades')
@@ -42,6 +43,12 @@ export class PropriedadesController {
   @UseGuards(PermissionGuard(PropriedadesPermission.LER_PROPRIEDADES))
   async findOne(@Param('idPublic') idPublic: string): Promise<ResponseGeneric<Propriedade>> {
     return await this.propriedadesService.findOne(idPublic);
+  }
+
+  @Patch('parceiro/:idPublic')
+  @UseGuards(PermissionGuard(PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN))
+  async updateParceiro(@Param('idPublic') idPublic: string, @Body() body: UpdatePropriedadeParceiroDto): Promise<ResponseGeneric<Propriedade>> {
+    return await this.propriedadesService.updateParceiro(idPublic, body);
   }
 
   @Patch(':idPublic')
