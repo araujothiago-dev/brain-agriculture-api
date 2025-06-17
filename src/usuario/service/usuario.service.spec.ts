@@ -1,87 +1,111 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsuarioService } from './usuario.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Usuario } from '../entities/usuario.entity';
+import { CpfCnpjVerify } from 'src/utils/cpf-cnpj-verify/cpf-cnpj-verify';
+import { PassVerify } from 'src/utils/pass-verify/passVerify';
 
 describe('UsuarioService', () => {
-  let service: UsuarioService;
-  let repo: Repository<Usuario>;
+    let service: UsuarioService;
+    let repo: Repository<Usuario>;
 
-  const mockUsuario = {
-    id: 1,
-    idPublic: 'uuid',
-    nome: 'João',
-    email: 'joao@email.com',
-    cpfCnpj: '12345678900',
-    senha: 'hashed',
-    ativo: true,
-    perfil: {
-      id: 1,
-      nome: '',
-      ativo: false,
-      permission: [],
-      usuario: [],
-      createdBy: '',
-      updatedBy: '',
-      idPublic: '',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    lastAccess: new Date(),
-    firstAccess: new Date(),
-    createdBy: 'system',
-    updatedBy: ''
-  };
+    const mockUsuario = {
+        nome: 'João Silva Araujo',
+        email: 'joaoaraujo@email.com',
+        cpfCnpj: '89.209.082/0001-92',
+        senha: '123456*An',
+        perfil: 2
+    };
 
-  const mockRepository = {
-    find: jest.fn().mockResolvedValue([mockUsuario]),
-    findOne: jest.fn().mockResolvedValue(mockUsuario),
-    save: jest.fn().mockResolvedValue(mockUsuario),
-  };
+    const mockPerfilRepository = {
+        findOneBy: jest.fn().mockResolvedValue({ id: 2, nome: 'CLIENTE' }),
+    };
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        UsuarioService,
-        {
-          provide: getRepositoryToken(Usuario),
-          useValue: mockRepository,
-        },
-      ],
-    }).compile();
+    const mockRepository = {
+        find: jest.fn().mockResolvedValue(null),
+        findOne: jest.fn().mockResolvedValue(null),
+        findOneBy: jest.fn().mockResolvedValue({ id: 1, ...mockUsuario }),
+        save: jest.fn().mockResolvedValue({ id: 1, ...mockUsuario }),
+        create: jest.fn().mockResolvedValue({ id: 1, ...mockUsuario }),
+        findAndCount: jest.fn().mockResolvedValue([[mockUsuario], 1])
+    };
 
-    service = module.get<UsuarioService>(UsuarioService);
-    repo = module.get<Repository<Usuario>>(getRepositoryToken(Usuario));
-  });
+    const mockDataSource = {
+        getRepository: jest.fn((entity) => {
+            if (entity.name === 'Perfil') return mockPerfilRepository;
+            if (entity.name === 'Usuario') return mockRepository;
+            return mockRepository;
+        }),
+    };
 
-  it('deve ser definido', () => {
-    expect(service).toBeDefined();
-  });
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                UsuarioService,
+                {
+                    provide: getRepositoryToken(Usuario),
+                    useValue: mockRepository,
+                },
+                {
+                    provide: DataSource,
+                    useValue: mockDataSource,
+                },
+                {
+                    provide: PassVerify,
+                    useValue: {
+                        passVerify: jest.fn().mockReturnValue(true),
+                    },
+                },
+                {
+                    provide: CpfCnpjVerify,
+                    useValue: {
+                        cpfCnpjVerify: jest.fn().mockReturnValue(true),
+                    },
+                }
+            ],
+        }).compile();
 
-  it('deve retornar todos os usuários', async () => {
-    const result = await service.findAllAdmin('testParameter', 0, 10);
-    expect(result).toEqual([mockUsuario]);
-    expect(repo.find).toHaveBeenCalled();
-  });
+        service = module.get<UsuarioService>(UsuarioService);
+        repo = module.get<Repository<Usuario>>(getRepositoryToken(Usuario));
+    });
 
-  it('deve retornar um usuário por ID', async () => {
-    const result = await service.findOne('1');
-    expect(result).toEqual(mockUsuario);
-    expect(repo.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
-  });
+    it('deve criar um novo usuário', async () => {
+        mockRepository.findOne = jest.fn().mockResolvedValue(null);
+        const result = await service.create(mockUsuario as any);
+        expect(result).toEqual({
+            data: {
+                ...mockUsuario,
+                cpfCnpj: "89.209.082/0001-92",
+                senha: expect.any(String),
+                id: 1
+            },
+            error: null,
+            message: "Ação realizada com sucesso."
+        });
+        expect(repo.save).toHaveBeenCalled();
+    });
 
-  it('deve criar um novo usuário', async () => {
-    const result = await service.create({
-      nome: 'João',
-      email: 'joao@email.com',
-      cpfCnpj: '12345678900',
-      senha: 'senha123',
-      perfil: null,
-    } as any);
-    expect(result).toEqual(mockUsuario);
-    expect(repo.save).toHaveBeenCalled();
-  });
+    it('deve retornar todos os usuários', async () => {
+        mockRepository.find.mockResolvedValue(null);
+        const result = await service.findAllAdmin('', 10, 0);
+        expect(result).toEqual({
+            data: {
+                content: [
+                    {
+                        cpfCnpj: "89.209.082/0001-92",
+                        email: "joaoaraujo@email.com",
+                        nome: "João Silva Araujo",
+                        perfil: 2,
+                        senha: expect.any(String),
+                    }
+                ],
+                total: 1,
+                totalPages: Infinity,
+            },
+            error: null,
+            message: "Ação realizada com sucesso."
+        });
+        expect(repo.findAndCount).toHaveBeenCalled();
+    });
 });

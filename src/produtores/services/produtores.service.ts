@@ -50,26 +50,16 @@ export class ProdutoresService {
         const usuarioSave = await this.usuarioService.create(usuario);
 
         if (!usuarioSave || !usuarioSave.data) {
-          throw 'Erro ao cadastrar usuário.';
+          throw 'Erro ao cadastrar usuário.' + JSON.stringify(usuarioSave);
         }
+
 
         body.usuario = usuarioSave.data;
       }
 
       const produtor = await this.produtorRepository.save(body);
 
-      const produtorReturn = await this.produtorRepository.findOne({
-        where: { id: produtor.id },
-        relations: {
-          usuario: true,
-          propriedades: {
-            culturasSafras: {
-              cultura: true,
-              safra: true
-            }
-          }
-        }
-      });
+      const produtorReturn = await this.produtorRepository.findOneBy({ id: produtor.id });
 
       if (!produtorReturn) {
         throw 'Erro ao buscar o produtor.';
@@ -77,6 +67,8 @@ export class ProdutoresService {
 
       return new ResponseGeneric<Produtor>(produtorReturn);
     } catch (error) {
+      console.log(error);
+      
       throw new HttpException({ message: 'Não foi possível cadastrar Produtor. ', code: error?.code, erro: error }, HttpStatus.BAD_REQUEST);
     }
   }
@@ -204,9 +196,9 @@ export class ProdutoresService {
         throw 'Não foi encontrado Produtor com esta identificação: ' + idPublic;
       }
 
-      const bodyUpdate: Produtor = { 
-        ...produtorReturne, 
-        ...body, 
+      const bodyUpdate: Produtor = {
+        ...produtorReturne,
+        ...body,
         usuario: body.usuario as Usuario
       };
 
