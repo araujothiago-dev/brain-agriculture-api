@@ -9,6 +9,7 @@ import { ProdutoresService } from './produtores.service';
 describe('ProdutorService', () => {
     let service: ProdutoresService;
     let repo: Repository<Produtor>;
+    let cpfCnpjVerify: CpfCnpjVerify;
 
     const mockUsuarioProdutor = {
         nome: 'João Silva Araujo',
@@ -26,8 +27,15 @@ describe('ProdutorService', () => {
         usuario: mockUsuarioProdutor
     };
 
+    const invalidUsuario = {
+        ...mockProdutor,
+        nome: 'João Silva Araujo',
+        cpfCnpj: '12345678900',
+        usuario: mockUsuarioProdutor
+    };
+
     const mockPerfilRepository = {
-        findOneBy: jest.fn().mockResolvedValue({ id: 2, nome: 'CLIENTE' }),
+        findOneBy: jest.fn().mockResolvedValue({ id: 2 }),
     };
 
     const mockRepository = {
@@ -37,6 +45,19 @@ describe('ProdutorService', () => {
         findOneBy: jest.fn().mockResolvedValue({ id: 1, ...mockProdutor }),
         create: jest.fn().mockResolvedValue({ id: 1, ...mockProdutor }),
         findAndCount: jest.fn().mockResolvedValue([[mockProdutor], 1])
+    };
+
+    const mockQueryRunner = {
+        connect: jest.fn(),
+        startTransaction: jest.fn(),
+        commitTransaction: jest.fn(),
+        rollbackTransaction: jest.fn(),
+        release: jest.fn(),
+        manager: {
+            save: jest.fn(),
+            findOne: jest.fn(),
+            find: jest.fn(),
+        },
     };
 
     const mockUsuarioService = {
@@ -50,6 +71,7 @@ describe('ProdutorService', () => {
     };
 
     const mockDataSource = {
+        createQueryRunner: jest.fn().mockReturnValue(mockQueryRunner),
         getRepository: jest.fn((entity) => {
             if (entity.name === 'Perfil') return mockPerfilRepository;
             if (entity.name === 'Usuario') return mockRepository;
@@ -84,6 +106,7 @@ describe('ProdutorService', () => {
 
         service = module.get<ProdutoresService>(ProdutoresService);
         repo = module.get<Repository<Produtor>>(getRepositoryToken(Produtor));
+        cpfCnpjVerify = module.get<CpfCnpjVerify>(CpfCnpjVerify);
     });
 
     it('deve criar um novo produtor', async () => {
@@ -130,4 +153,15 @@ describe('ProdutorService', () => {
         expect(repo.findAndCount).toHaveBeenCalled();
     });
 
+    it('deve lançar erro ao criar produtor com CPF inválido', async () => {
+        (cpfCnpjVerify.cpfCnpjVerify as jest.Mock).mockResolvedValueOnce(false);
+        await expect(service.create(invalidUsuario as any)).rejects.toThrow('Não foi possível cadastrar Produtor. ');
+        expect(cpfCnpjVerify.cpfCnpjVerify).toHaveBeenCalledWith('12345678900');
+    });
+
+    it('deve lançar erro ao criar produtor com cpf já existente', async () => {
+        mockRepository.findOne = jest.fn().mockResolvedValue({ ...mockProdutor });
+        await expect(service.create({ ...mockProdutor, email: 'joaoaraujo@email.com' } as any)).rejects.toThrow('Não foi possível cadastrar Produtor. ');
+    });
+    
 });

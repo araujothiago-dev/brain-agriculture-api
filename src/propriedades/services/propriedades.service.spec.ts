@@ -158,14 +158,14 @@ describe('PropriedadeService', () => {
   it('deve lançar erro ao criar propriedade com município inexistente', async () => {
     mockRepository.findOne = jest.fn().mockResolvedValue(null);
     mockCidadeRepository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(service.create({ ...mockPropriedade, cidade: { id: 999 }, produtor: { id: 1 } } as any)).rejects.toThrow('Não foi possível cadastrar a Propriedade.');
+    await expect(service.create({ ...mockPropriedade, cidade: { id: 99999 }, produtor: { id: 1 } } as any)).rejects.toThrow('Não foi possível cadastrar a Propriedade.');
   });
 
   it('deve lançar erro ao criar propriedade com produtor inexistente', async () => {
     mockRepository.findOne = jest.fn().mockResolvedValue(null);
     mockCidadeRepository.findOne = jest.fn().mockResolvedValue({ id: 1 });
     mockProdutorRepository.findOne = jest.fn().mockResolvedValue(null);
-    await expect(service.create({ ...mockPropriedade, cidade: { id: 1 }, produtor: { id: 999 } } as any)).rejects.toThrow('Não foi possível cadastrar a Propriedade.');
+    await expect(service.create({ ...mockPropriedade, cidade: { id: 1 }, produtor: { id: 99999 } } as any)).rejects.toThrow('Não foi possível cadastrar a Propriedade.');
   });
 
   it('deve buscar uma propriedade pelo idPublic', async () => {
