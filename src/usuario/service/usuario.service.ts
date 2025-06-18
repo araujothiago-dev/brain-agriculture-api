@@ -27,8 +27,9 @@ export class UsuarioService {
 
   async create(body: CreateUsuarioDto) {
     try {
+      const cpfCnpj = body.cpfCnpj.replace(/[^0-9]/g, "").trim();
 
-      if (!(await this.cpfCnpjVerify.cpfCnpjVerify(body.cpfCnpj))) {
+      if (!(await this.cpfCnpjVerify.cpfCnpjVerify(cpfCnpj))) {
         throw 'CPF/CNPJ inválido.';
       }
 
@@ -41,7 +42,7 @@ export class UsuarioService {
         select: ['id', 'idPublic', 'email'],
       });
 
-      if (usuarioCheck?.cpfCnpj == body.cpfCnpj.replace(/[^0-9]/g, "").trim()) {
+      if (usuarioCheck?.cpfCnpj == cpfCnpj) {
         throw 'Usuário já cadastrado com o mesmo CPF/CNPJ.';
       }
 
@@ -53,12 +54,9 @@ export class UsuarioService {
         throw 'Senha deve ter no mínimo 8 caracteres e conter ao menos 1 número, 1 letra minúscula, 1 letra maiúscula e 1 caractere especial. '
       }
 
-
       body.senha = await bcrypt.hash(body.senha, Number(process.env.BCRYPT_SALT_ROUNDS));
 
       body.email = body.email.trim().toLowerCase();
-
-      body.cpfCnpj = body.cpfCnpj.replace(/[^0-9]/g, "").trim();
 
       const perfil = await this.dataSource.getRepository(Perfil).findOneBy({ id: body.perfil.id });
 
@@ -76,7 +74,7 @@ export class UsuarioService {
 
       return new ResponseGeneric<Usuario>(usuarioReturn);
     } catch (error) {
-      console.error(error);
+      console.log(error);
       throw new HttpException({ message: 'Não foi possível cadastrar Usuário. ', code: error?.code, erro: error }, HttpStatus.BAD_REQUEST)
     }
   }
@@ -128,6 +126,7 @@ export class UsuarioService {
         totalPages: Math.ceil(total / size)
       });
     } catch (error) {
+      console.log(error);
       throw new HttpException({ message: 'Não foi possível listar Usuários.', code: error?.code, erro: error }, HttpStatus.NOT_FOUND)
     }
   }
@@ -179,6 +178,7 @@ export class UsuarioService {
         totalPages: Math.ceil(total / size)
       });
     } catch (error) {
+      console.log(error);
       throw new HttpException({ message: 'Não foi possível listar Usuários.', code: error?.code, erro: error }, HttpStatus.NOT_FOUND)
     }
   }
@@ -230,6 +230,7 @@ export class UsuarioService {
         totalPages: Math.ceil(total / size)
       });
     } catch (error) {
+      console.log(error);
       throw new HttpException({ message: 'Não foi possível listar Usuários.', code: error?.code, erro: error }, HttpStatus.NOT_FOUND)
     }
   }
@@ -257,6 +258,7 @@ export class UsuarioService {
 
       return new ResponseGeneric<Usuario[]>(usuario);
     } catch (error) {
+      console.log(error);
       throw new HttpException({ message: 'Não foi possível listar Usuários.', code: error?.code, erro: error }, HttpStatus.NOT_FOUND)
     }
   }
@@ -282,6 +284,7 @@ export class UsuarioService {
 
       return await new ResponseGeneric<Usuario>(usuario);
     } catch (error) {
+      console.log(error);
       throw new HttpException({ message: 'Não foi possível buscar o Usuário. ', code: error?.code, erro: error }, HttpStatus.NOT_FOUND)
     }
   }
@@ -320,6 +323,7 @@ export class UsuarioService {
       return new ResponseGeneric<Usuario>(usuario);
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      console.log(error);
 
       throw new HttpException({ message: 'Não foi possível modificar o Usuário. ', code: error?.code, erro: error }, HttpStatus.BAD_REQUEST)
     } finally {
@@ -364,6 +368,7 @@ export class UsuarioService {
       return new ResponseGeneric<Usuario>(usuario);
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      console.log(error);
 
       throw new HttpException({ message: 'Não foi possível modificar o Usuário. ', code: error?.code, erro: error }, HttpStatus.BAD_REQUEST)
     } finally {
@@ -408,6 +413,7 @@ export class UsuarioService {
       return await new ResponseGeneric<Usuario>(usuario);
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      console.log(error);
 
       throw new HttpException({ message: 'Não foi possível modificar a senha do Usuário. ', code: error?.code, erro: error }, HttpStatus.BAD_REQUEST)
     } finally {
@@ -446,6 +452,7 @@ export class UsuarioService {
       const affected = returnDelete && typeof returnDelete.affected === 'number' ? returnDelete.affected : 0;
       return new ResponseGeneric<Usuario>(null, affected + ' Usuário deletado com sucesso.');
     } catch (error) {
+      console.log(error);
       throw new HttpException({ message: 'Não foi possível deletar o Usuário. ', code: error?.code, erro: error }, HttpStatus.NOT_FOUND)
     }
   }

@@ -1,5 +1,5 @@
 import { IsCPFOrCNPJ } from "brazilian-class-validator";
-import { Transform, Type } from "class-transformer";
+import { Exclude, Transform, Type } from "class-transformer";
 import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength, ValidateIf, ValidateNested } from "class-validator";
 import { Perfil } from "src/perfil/entities/perfil.entity";
 import { IdDto } from "src/utils/id.dto";
@@ -22,6 +22,7 @@ export class CreateUsuarioDto {
 
     @IsNotEmpty({ message: "A 'senha' deve ser informada." })
     @IsString({ message: "A 'senha' deve ser uma string." })
+    @Exclude()
     senha: string;
     
     @IsOptional()

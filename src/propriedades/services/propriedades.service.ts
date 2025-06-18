@@ -125,6 +125,7 @@ export class PropriedadesService {
       return new ResponseGeneric<Propriedade>(propriedadeReturn);
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      console.log(error);
 
       throw new HttpException({ message: 'Não foi possível cadastrar a Propriedade. ', code: error?.code, erro: error }, HttpStatus.BAD_REQUEST)
     } finally {
@@ -193,6 +194,7 @@ export class PropriedadesService {
         totalPages: Math.ceil(total / size)
       });
     } catch (error) {
+      console.log(error);
       throw new HttpException({ message: 'Não foi possível buscar as Propriedades. ', code: error?.code, erro: error }, HttpStatus.NOT_FOUND);
     }
   }
