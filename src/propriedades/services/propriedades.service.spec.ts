@@ -53,6 +53,7 @@ describe('PropriedadeService', () => {
     findOneBy: jest.fn().mockResolvedValue({ id: 1, ...mockPropriedade }),
     save: jest.fn().mockResolvedValue({ id: 1, ...mockPropriedade }),
     create: jest.fn().mockResolvedValue({ id: 1, ...mockPropriedade }),
+    delete: jest.fn().mockResolvedValue({ id: 1, ...mockPropriedade }),
     findAndCount: jest.fn().mockResolvedValue([[mockPropriedade], 1])
   };
 
@@ -99,7 +100,9 @@ describe('PropriedadeService', () => {
 
   it('deve criar uma nova propriedade', async () => {
     mockRepository.findOne = jest.fn().mockResolvedValue(null);
-    const result = await service.create(mockPropriedade as any);
+    mockQueryRunner.manager.save = jest.fn().mockResolvedValue({ ...mockPropriedade, id: 1 });
+    mockQueryRunner.manager.findOne = jest.fn().mockResolvedValue({ ...mockPropriedade, id: 1 });
+    const result = await service.create({ ...mockPropriedade, cidade: { id: 1 }, produtor: { id: 1 } } as any);
     expect(result).toEqual({
       data: {
         ...mockPropriedade,
@@ -108,12 +111,12 @@ describe('PropriedadeService', () => {
       error: null,
       message: "Ação realizada com sucesso."
     });
-    expect(repo.save).toHaveBeenCalled();
+    expect(mockQueryRunner.manager.save).toHaveBeenCalled();
   });
 
   it('deve retornar todas as propriedades', async () => {
-    mockRepository.find.mockResolvedValue(null);
-    const result = await service.findAll(10, 0, '');
+    mockRepository.findAndCount.mockResolvedValue([[{ ...mockPropriedade, id: 1 }], 1]);
+    const result = await service.findAll(1, 10, '');
     expect(result).toEqual(
       expect.objectContaining({
         data: {
@@ -134,11 +137,57 @@ describe('PropriedadeService', () => {
             }),
           ],
           total: 1,
-          totalPages: Infinity,
+          totalPages: 1,
         },
         error: null,
         message: "Ação realizada com sucesso."
       })
     );
+  });
+
+  it('deve lançar erro ao criar propriedade com áreas inválidas', async () => {
+    const invalidPropriedade = { ...mockPropriedade, areaAgricultavel: 90, areaVegetacao: 20, areaTotal: 100, cidade: { id: 1 }, produtor: { id: 1 } };
+    await expect(service.create(invalidPropriedade as any)).rejects.toThrow('Não foi possível cadastrar a Propriedade.');
+  });
+
+  it('deve lançar erro ao criar propriedade com matrícula já existente', async () => {
+    mockRepository.findOne = jest.fn().mockResolvedValue({ ...mockPropriedade });
+    await expect(service.create({ ...mockPropriedade, cidade: { id: 1 }, produtor: { id: 1 } } as any)).rejects.toThrow('Não foi possível cadastrar a Propriedade.');
+  });
+
+  it('deve lançar erro ao criar propriedade com município inexistente', async () => {
+    mockRepository.findOne = jest.fn().mockResolvedValue(null);
+    mockCidadeRepository.findOne = jest.fn().mockResolvedValue(null);
+    await expect(service.create({ ...mockPropriedade, cidade: { id: 999 }, produtor: { id: 1 } } as any)).rejects.toThrow('Não foi possível cadastrar a Propriedade.');
+  });
+
+  it('deve lançar erro ao criar propriedade com produtor inexistente', async () => {
+    mockRepository.findOne = jest.fn().mockResolvedValue(null);
+    mockCidadeRepository.findOne = jest.fn().mockResolvedValue({ id: 1 });
+    mockProdutorRepository.findOne = jest.fn().mockResolvedValue(null);
+    await expect(service.create({ ...mockPropriedade, cidade: { id: 1 }, produtor: { id: 999 } } as any)).rejects.toThrow('Não foi possível cadastrar a Propriedade.');
+  });
+
+  it('deve buscar uma propriedade pelo idPublic', async () => {
+    mockRepository.findOne = jest.fn().mockResolvedValue({ id: 1, ...mockPropriedade });
+    const result = await service.findOne('id-public-test');
+    expect(result.data).toEqual(expect.objectContaining({ nome: 'Fazenda Bela Vista' }));
+  });
+
+  it('deve lançar erro ao buscar propriedade inexistente', async () => {
+    mockRepository.findOne = jest.fn().mockResolvedValue(null);
+    await expect(service.findOne('id-inexistente')).rejects.toThrow('Não foi possível buscar a Propriedade.');
+  });
+
+  it('deve remover uma propriedade', async () => {
+    mockRepository.findOneBy = jest.fn().mockResolvedValue({ idPublic: 'id-public-test', ...mockPropriedade });
+    mockRepository.delete = jest.fn().mockResolvedValue({ affected: 1 });
+    const result = await service.remove('id-public-test');
+    expect(result.message).toContain('Propriedade deletada com sucesso');
+  });
+
+  it('deve lançar erro ao remover propriedade inexistente', async () => {
+    mockRepository.findOneBy = jest.fn().mockResolvedValue(null);
+    await expect(service.remove('id-inexistente')).rejects.toThrow('Não foi possível deletar a Propriedade.');
   });
 });
