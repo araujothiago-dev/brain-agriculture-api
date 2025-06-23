@@ -1,14 +1,11 @@
-import { Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from 'src/app.module';
+import { INestApplicationContext, Logger } from '@nestjs/common';
 import { CreateCulturaDto } from 'src/culturas/dto/create-cultura.dto';
 import { Cultura } from 'src/culturas/entities/cultura.entity';
 import { CulturasService } from 'src/culturas/services/culturas.service';
 import { DataSource } from 'typeorm';
 
-export async function seedCultura(dataSource: DataSource) {
+export async function seedCultura(dataSource: DataSource, app: INestApplicationContext) {
     const logger = new Logger('SeedCulturas');
-    const app = await NestFactory.createApplicationContext(AppModule);
 
     try {
         const culturasServices = app.get(CulturasService);
@@ -42,7 +39,5 @@ export async function seedCultura(dataSource: DataSource) {
     } catch (error) {
         logger.error('Erro durante o seed de culturas', error.message);
         throw error;
-    } finally {
-        await app.close();
-    }
+    } 
 }

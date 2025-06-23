@@ -1,14 +1,11 @@
-import { NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
-import { AppModule } from 'src/app.module';
+import { INestApplicationContext, Logger } from '@nestjs/common';
 import { CreatePropriedadeDto } from 'src/propriedades/dto/create-propriedade.dto';
-import { PropriedadesService } from 'src/propriedades/services/propriedades.service';
 import { Propriedade } from 'src/propriedades/entities/propriedade.entity';
+import { PropriedadesService } from 'src/propriedades/services/propriedades.service';
 import { DataSource } from 'typeorm';
 
-export async function seedPropriedades(dataSource: DataSource) {
+export async function seedPropriedades(dataSource: DataSource, app: INestApplicationContext) {
     const logger = new Logger('SeedPropriedades');
-    const app = await NestFactory.createApplicationContext(AppModule);
 
     try {
         const propriedadesService = app.get(PropriedadesService);
@@ -121,7 +118,5 @@ export async function seedPropriedades(dataSource: DataSource) {
     } catch (error) {
         logger.error('Erro durante o seed de propriedades', error.message);
         throw error;
-    } finally {
-        await app.close();
-    }
+    } 
 }

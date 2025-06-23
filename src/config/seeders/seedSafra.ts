@@ -1,13 +1,10 @@
-import { Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from 'src/app.module';
+import { INestApplicationContext, Logger } from '@nestjs/common';
 import { Safra } from 'src/safras/entities/safra.entity';
 import { DataSource } from 'typeorm';
 import { SafrasService } from '../../safras/services/safras.service';
 
-export async function seedSafra(dataSource: DataSource) {
+export async function seedSafra(dataSource: DataSource, app: INestApplicationContext) {
     const logger = new Logger('SeedSafras');
-    const app = await NestFactory.createApplicationContext(AppModule);
     try {
         const safrasService = app.get(SafrasService);
 
@@ -21,21 +18,15 @@ export async function seedSafra(dataSource: DataSource) {
             "culturas", 
             "propriedades"
             RESTART IDENTITY CASCADE;
-
-            TRUNCATE TABLE 
-            "produtores"
-            RESTART IDENTITY CASCADE;
             
             DELETE FROM "security"."usuario"
             WHERE email != 'admin@brain.agriculture.com';
 
-            SELECT setval('security.usuario_id_seq', (SELECT MAX(id) FROM security.usuario));
-
+            SELECT setval('security.usuario_id_seq', COALESCE((SELECT MAX(id) FROM security.usuario), 1));
         `);
             logger.log('Tabelas truncadas com sucesso.');
         } catch (error) {
             logger.error('Erro ao truncar tabelas:', error);
-            // return;
             await app.close();
         }
 
@@ -65,7 +56,5 @@ export async function seedSafra(dataSource: DataSource) {
     } catch (error) {
         logger.error('Erro durante o seed de safras', error.message);
         throw error;
-    } finally {
-        await app.close();
     }
 }
