@@ -22,7 +22,6 @@ export class CreateUsuarioDto {
 
     @IsNotEmpty({ message: "A 'senha' deve ser informada." })
     @IsString({ message: "A 'senha' deve ser uma string." })
-    @Exclude()
     senha: string;
     
     @IsOptional()
