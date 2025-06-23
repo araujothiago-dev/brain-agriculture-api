@@ -1,172 +1,41 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { Logger } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
+import CulturasPermission from "src/culturas/enums/culturasPermission.enum";
+import DashboardPermission from "src/dashboard/enum/dashboardPermission.enum";
+import EstadoPermission from "src/estado/enums/estadoPermission.enum";
+import MunicipioPermission from "src/municipio/enums/municipioPermission.enum";
 import PerfilEnum from "src/perfil/enums/perfil.enum";
-import UsuarioPermission from "src/usuario/enums/usuarioPermission.enum";
 import PerfilPermission from "src/perfil/enums/perfilPermission.enum";
 import PermissionsPermission from "src/permission/enums/permissionsPermission.enum";
-import MunicipioPermission from "src/municipio/enums/municipioPermission.enum";
-import EstadoPermission from "src/estado/enums/estadoPermission.enum";
-import DashboardPermission from "src/dashboard/enum/dashboardPermission.enum";
-import CulturasPermission from "src/culturas/enums/culturasPermission.enum";
 import ProdutorPermission from "src/produtores/enum/produtorPermission.enum";
 import PropriedadesPermission from "src/propriedades/enums/propriedadesPermission.enum";
 import SafrasPermission from "src/safras/enums/safrasPermission.enum";
-import { Logger } from "@nestjs/common";
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "src/app.module";
+import UsuarioPermission from "src/usuario/enums/usuarioPermission.enum";
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class Init2025612142800 implements MigrationInterface {
 	public async up(queryRunner: QueryRunner): Promise<void> {
 		const logger = new Logger('Init2025612142800');
-		const app = await NestFactory.createApplicationContext(AppModule);
 
 		try {
-
-
-
-			logger.log('Iniciando create schema...');
-
 			await queryRunner.query(`
 			TRUNCATE TABLE 
-            "security"."perfil_permission"
-            "security"."permission"
-            "security"."perfil"
-            RESTART IDENTITY CASCADE;
+			"security"."perfil_permission",
+			"security"."permission",
+			"security"."perfil"
+			RESTART IDENTITY CASCADE;
 			`);
-
-			await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
-
-			await queryRunner.query(`CREATE SCHEMA IF NOT EXISTS security`);
-
-			logger.log('Iniciando create table permission...');
-			await queryRunner.query(`
-			CREATE TABLE security.permission (
-				id SERIAL PRIMARY KEY,
-				id_public UUID NOT NULL UNIQUE,
-				nome VARCHAR NOT NULL UNIQUE,
-				descricao VARCHAR NOT NULL UNIQUE,
-				ativo BOOLEAN NOT NULL DEFAULT true,
-				created_at TIMESTAMP DEFAULT now(),
-				updated_at TIMESTAMP DEFAULT now()
-			)
-		`);
-
-			await queryRunner.query(`
-			CREATE INDEX IDX_permission_id_public ON security.permission(id_public);
-		`);
-
-			logger.log('Iniciando create table perfil...');
-			await queryRunner.query(`
-			CREATE TABLE security.perfil (
-				id SERIAL PRIMARY KEY,
-				id_public UUID NOT NULL UNIQUE,
-				nome VARCHAR NOT NULL UNIQUE,
-				ativo BOOLEAN NOT NULL DEFAULT true,
-				created_at TIMESTAMP DEFAULT now(),
-				updated_at TIMESTAMP DEFAULT now()
-				)
-		`);
-
-			await queryRunner.query(`
-			CREATE INDEX IDX_perfil_id_public ON security.perfil(id_public);
-		`);
-
-			logger.log('Iniciando create table perfil_permission...');
-			await queryRunner.query(`
-			CREATE TABLE security.perfil_permission (
-				perfil_id INTEGER NOT NULL,
-				permission_id INTEGER NOT NULL,
-				PRIMARY KEY (perfil_id, permission_id),
-				CONSTRAINT FK_perfil FOREIGN KEY (perfil_id) REFERENCES security.perfil(id) ON DELETE CASCADE,
-				CONSTRAINT FK_permission FOREIGN KEY (permission_id) REFERENCES security.permission(id) ON DELETE CASCADE
-			)
-		`);
-
-			await queryRunner.query(`
-			CREATE INDEX IDX_perfil_permission_perfil_id ON security.perfil_permission(perfil_id);
-			CREATE INDEX IDX_perfil_permission_permission_id ON security.perfil_permission(permission_id);
-		`);
-
-			logger.log('Iniciando create table usuario...');
-			await queryRunner.query(`
-			CREATE TABLE security.usuario (
-				id SERIAL PRIMARY KEY,
-				id_public UUID NOT NULL UNIQUE,
-				nome VARCHAR NOT NULL,
-				email VARCHAR NOT NULL UNIQUE,
-				cpf_cnpj VARCHAR NOT NULL UNIQUE,
-				senha VARCHAR NOT NULL,
-				ativo BOOLEAN NOT NULL DEFAULT true,
-				perfil_id INTEGER,
-				produtor_id INTEGER,
-				last_access TIMESTAMP,
-				first_access TIMESTAMP,
-				data_delete TIMESTAMP,
-				created_at TIMESTAMP DEFAULT now(),
-				updated_at TIMESTAMP DEFAULT now(),
-				CONSTRAINT FK_usuario_perfil FOREIGN KEY (perfil_id) REFERENCES security.perfil(id)
-			)
-		`);
-
-			await queryRunner.query(`
-			CREATE INDEX IDX_usuario_id_public ON security.usuario(id_public);
-			CREATE INDEX IDX_usuario_email ON security.usuario(email);
-			CREATE INDEX IDX_usuario_cpf_cnpj ON security.usuario(cpf_cnpj);
-		`);
-
-			logger.log('Iniciando alter table usuario...');
-
-			await queryRunner.query(`
-			ALTER TABLE security.usuario
-			ADD CONSTRAINT UQ_DELETE UNIQUE (email, cpf_cnpj, data_delete)
-		`);
-
-			logger.log('Iniciando create table estado...');
-			await queryRunner.query(`
-			CREATE TABLE public.estado (
-				id SERIAL PRIMARY KEY,
-				id_public UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-				nome VARCHAR NOT NULL,
-				sigla VARCHAR NOT NULL,
-				data_delete TIMESTAMP,
-				is_delete INTEGER NOT NULL DEFAULT 0,
-				created_at TIMESTAMP DEFAULT now(),
-				updated_at TIMESTAMP DEFAULT now()
-				);
-		`);
-
-			await queryRunner.query(`
-			CREATE INDEX IDX_estado_id_public ON public.estado(id_public);
-		`);
-
-			logger.log('Iniciando create table município...');
-			await queryRunner.query(`
-			CREATE TABLE public.municipio (
-				id SERIAL PRIMARY KEY,
-				id_public UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
-				nome VARCHAR NOT NULL,
-				ativo BOOLEAN NOT NULL DEFAULT false,
-				estado_id INTEGER NOT NULL,
-				created_at TIMESTAMP DEFAULT now(),
-				updated_at TIMESTAMP DEFAULT now(),
-				CONSTRAINT FK_municipio_estado FOREIGN KEY (estado_id) REFERENCES public.estado(id)
-			);
-		`);
-
-			await queryRunner.query(`
-		CREATE INDEX IDX_municipio_id_public ON public.municipio(id_public);
-		`);
 
 
 			/** --------------
 			@PERFIL
 			-------------- */
 			await queryRunner.query(`
-		INSERT INTO security.perfil (id_public, nome, ativo) VALUES
-			(uuid_generate_v4(), '${PerfilEnum.ADMIN}', 'true'),
-			(uuid_generate_v4(), '${PerfilEnum.CLIENTE}', 'true'),
-			(uuid_generate_v4(), '${PerfilEnum.PARCEIRO}', 'true')
-		`)
+			INSERT INTO security.perfil (id_public, nome, ativo) VALUES
+				(uuid_generate_v4(), '${PerfilEnum.ADMIN}', 'true'),
+				(uuid_generate_v4(), '${PerfilEnum.CLIENTE}', 'true'),
+				(uuid_generate_v4(), '${PerfilEnum.PARCEIRO}', 'true')
+			`)
 
 			logger.log('Iniciando insert table permission...');
 
@@ -174,31 +43,31 @@ export class Init2025612142800 implements MigrationInterface {
 			@PERMISSOES
 			-------------- */
 			await queryRunner.query(`
-		INSERT INTO security.permission (id_public, nome, descricao) VALUES
-			(uuid_generate_v4(), '${UsuarioPermission.LER_USUARIO_CLIENTE}', 'Permite visualizar apenas usuários clientes registrados.'),
-			(uuid_generate_v4(), '${UsuarioPermission.LER_USUARIO}', 'Permite visualizar todos usuários registrados.'),
-			(uuid_generate_v4(), '${UsuarioPermission.MODIFICAR_USUARIO}', 'Permite editar, adicionar e excluir outros usuários registrados.'),
-			(uuid_generate_v4(), '${UsuarioPermission.MODIFICAR_USUARIO_PUBLIC}', 'Permite editar o próprio usuário registrado.'),
-			(uuid_generate_v4(), '${UsuarioPermission.MODIFICAR_USUARIO_CLIENTE}', 'Permite editar, adicionar e excluir apenas usuários clientes registrados.'),
-			(uuid_generate_v4(), '${PerfilPermission.LER_PERFIL}', 'Permite visualizar perfis registrados.'),
-			(uuid_generate_v4(), '${PerfilPermission.MODIFICAR_PERFIL}', 'Permite editar, adicionar e excluir perfis registrados.'),
-			(uuid_generate_v4(), '${PermissionsPermission.LER_PERMISSIONS}', 'Permite visualizar permissões registradas.'),
-			(uuid_generate_v4(), '${PermissionsPermission.MODIFICAR_PERMISSIONS}', 'Permite editar, adicionar e excluir permissões registradas.'),
-			(uuid_generate_v4(), '${MunicipioPermission.LER_MUNICIPIO}', 'Permite visualizar municípios registrados.'),
-			(uuid_generate_v4(), '${MunicipioPermission.MODIFICAR_MUNICIPIO}', 'Permite editar, adicionar e excluir municípios registrados.'),
-			(uuid_generate_v4(), '${EstadoPermission.LER_ESTADO}', 'Permite visualizar estados registrados.'),
-			(uuid_generate_v4(), '${EstadoPermission.MODIFICAR_ESTADO}', 'Permite editar, adicionar e excluir estados registrados.'),
-			(uuid_generate_v4(), '${CulturasPermission.LER_CULTURAS}', 'Permite visualizar culturas registrados.'),
-			(uuid_generate_v4(), '${CulturasPermission.MODIFICAR_CULTURAS}', 'Permite editar, adicionar e excluir culturas registrados.'),
-			(uuid_generate_v4(), '${DashboardPermission.LER_DASHBOARD}', 'Permite visualizar empresas registrados.'),
-			(uuid_generate_v4(), '${ProdutorPermission.LER_PRODUTOR}', 'Permite visualizar produtores registrados.'),
-			(uuid_generate_v4(), '${ProdutorPermission.MODIFICAR_PRODUTOR}', 'Permite editar, adicionar e excluir produtores registrados.'),
-			(uuid_generate_v4(), '${PropriedadesPermission.LER_PROPRIEDADES}', 'Permite visualizar propriedades registrados.'),
-			(uuid_generate_v4(), '${PropriedadesPermission.MODIFICAR_PROPRIEDADES}', 'Permite editar, adicionar e excluir propriedades registrados.'),
-			(uuid_generate_v4(), '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}', 'Permite editar, adicionar e excluir apenas propriedades existentes registrados.'),
-			(uuid_generate_v4(), '${SafrasPermission.LER_SAFRAS}', 'Permite visualizar safras registrados.'),
-			(uuid_generate_v4(), '${SafrasPermission.MODIFICAR_SAFRAS}', 'Permite editar, adicionar e excluir safras registrados.')
-		`)
+			INSERT INTO security.permission (id_public, nome, descricao) VALUES
+				(uuid_generate_v4(), '${UsuarioPermission.LER_USUARIO_CLIENTE}', 'Permite visualizar apenas usuários clientes registrados.'),
+				(uuid_generate_v4(), '${UsuarioPermission.LER_USUARIO}', 'Permite visualizar todos usuários registrados.'),
+				(uuid_generate_v4(), '${UsuarioPermission.MODIFICAR_USUARIO}', 'Permite editar, adicionar e excluir outros usuários registrados.'),
+				(uuid_generate_v4(), '${UsuarioPermission.MODIFICAR_USUARIO_PUBLIC}', 'Permite editar o próprio usuário registrado.'),
+				(uuid_generate_v4(), '${UsuarioPermission.MODIFICAR_USUARIO_CLIENTE}', 'Permite editar, adicionar e excluir apenas usuários clientes registrados.'),
+				(uuid_generate_v4(), '${PerfilPermission.LER_PERFIL}', 'Permite visualizar perfis registrados.'),
+				(uuid_generate_v4(), '${PerfilPermission.MODIFICAR_PERFIL}', 'Permite editar, adicionar e excluir perfis registrados.'),
+				(uuid_generate_v4(), '${PermissionsPermission.LER_PERMISSIONS}', 'Permite visualizar permissões registradas.'),
+				(uuid_generate_v4(), '${PermissionsPermission.MODIFICAR_PERMISSIONS}', 'Permite editar, adicionar e excluir permissões registradas.'),
+				(uuid_generate_v4(), '${MunicipioPermission.LER_MUNICIPIO}', 'Permite visualizar municípios registrados.'),
+				(uuid_generate_v4(), '${MunicipioPermission.MODIFICAR_MUNICIPIO}', 'Permite editar, adicionar e excluir municípios registrados.'),
+				(uuid_generate_v4(), '${EstadoPermission.LER_ESTADO}', 'Permite visualizar estados registrados.'),
+				(uuid_generate_v4(), '${EstadoPermission.MODIFICAR_ESTADO}', 'Permite editar, adicionar e excluir estados registrados.'),
+				(uuid_generate_v4(), '${CulturasPermission.LER_CULTURAS}', 'Permite visualizar culturas registrados.'),
+				(uuid_generate_v4(), '${CulturasPermission.MODIFICAR_CULTURAS}', 'Permite editar, adicionar e excluir culturas registrados.'),
+				(uuid_generate_v4(), '${DashboardPermission.LER_DASHBOARD}', 'Permite visualizar empresas registrados.'),
+				(uuid_generate_v4(), '${ProdutorPermission.LER_PRODUTOR}', 'Permite visualizar produtores registrados.'),
+				(uuid_generate_v4(), '${ProdutorPermission.MODIFICAR_PRODUTOR}', 'Permite editar, adicionar e excluir produtores registrados.'),
+				(uuid_generate_v4(), '${PropriedadesPermission.LER_PROPRIEDADES}', 'Permite visualizar propriedades registrados.'),
+				(uuid_generate_v4(), '${PropriedadesPermission.MODIFICAR_PROPRIEDADES}', 'Permite editar, adicionar e excluir propriedades registrados.'),
+				(uuid_generate_v4(), '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}', 'Permite editar, adicionar e excluir apenas propriedades existentes registrados.'),
+				(uuid_generate_v4(), '${SafrasPermission.LER_SAFRAS}', 'Permite visualizar safras registrados.'),
+				(uuid_generate_v4(), '${SafrasPermission.MODIFICAR_SAFRAS}', 'Permite editar, adicionar e excluir safras registrados.')
+			`)
 
 			logger.log('Iniciando insert table perfil_permission...');
 
@@ -206,112 +75,112 @@ export class Init2025612142800 implements MigrationInterface {
 			@PERFIL_PERMISSOES ADMIN
 			-------------- */
 			await queryRunner.query(`
-		INSERT INTO security.perfil_permission (permission_id, perfil_id) VALUES
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.LER_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.LER_USUARIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_PUBLIC}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${PerfilPermission.LER_PERFIL}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${PerfilPermission.MODIFICAR_PERFIL}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${PermissionsPermission.LER_PERMISSIONS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${PermissionsPermission.MODIFICAR_PERMISSIONS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${MunicipioPermission.LER_MUNICIPIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${MunicipioPermission.MODIFICAR_MUNICIPIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${EstadoPermission.LER_ESTADO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${EstadoPermission.MODIFICAR_ESTADO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.LER_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.MODIFICAR_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.LER_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.MODIFICAR_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.LER_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.LER_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.MODIFICAR_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
-			((SELECT id FROM security.permission WHERE nome = '${DashboardPermission.LER_DASHBOARD}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}'))
-		`)
+			INSERT INTO security.perfil_permission (permission_id, perfil_id) VALUES
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.LER_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.LER_USUARIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_PUBLIC}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${PerfilPermission.LER_PERFIL}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${PerfilPermission.MODIFICAR_PERFIL}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${PermissionsPermission.LER_PERMISSIONS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${PermissionsPermission.MODIFICAR_PERMISSIONS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${MunicipioPermission.LER_MUNICIPIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${MunicipioPermission.MODIFICAR_MUNICIPIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${EstadoPermission.LER_ESTADO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${EstadoPermission.MODIFICAR_ESTADO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.LER_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.MODIFICAR_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.LER_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.MODIFICAR_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.LER_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.LER_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.MODIFICAR_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${DashboardPermission.LER_DASHBOARD}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}'))
+			`)
 
 			/** --------------
 			@PERFIL_PERMISSOES .PARCEIRO
 			-------------- */
 			await queryRunner.query(`
-		INSERT INTO security.perfil_permission (permission_id, perfil_id) VALUES
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.LER_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.LER_USUARIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_PUBLIC}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${PerfilPermission.LER_PERFIL}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${PermissionsPermission.LER_PERMISSIONS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${MunicipioPermission.LER_MUNICIPIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${EstadoPermission.LER_ESTADO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.LER_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.MODIFICAR_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.LER_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.LER_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.LER_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.MODIFICAR_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
-			((SELECT id FROM security.permission WHERE nome = '${DashboardPermission.LER_DASHBOARD}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}'))
-		`)
+			INSERT INTO security.perfil_permission (permission_id, perfil_id) VALUES
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.LER_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.LER_USUARIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_PUBLIC}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${PerfilPermission.LER_PERFIL}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${PermissionsPermission.LER_PERMISSIONS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${MunicipioPermission.LER_MUNICIPIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${EstadoPermission.LER_ESTADO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.LER_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.MODIFICAR_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.LER_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.LER_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.LER_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.MODIFICAR_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${DashboardPermission.LER_DASHBOARD}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}'))
+			`)
 
 			/** --------------
 			@PERFIL_PERMISSOES CLIENTE
 			-------------- */
 			await queryRunner.query(`
-		INSERT INTO security.perfil_permission (permission_id, perfil_id) VALUES
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.LER_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_PUBLIC}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${PerfilPermission.LER_PERFIL}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${PermissionsPermission.LER_PERMISSIONS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${MunicipioPermission.LER_MUNICIPIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${EstadoPermission.LER_ESTADO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.LER_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.MODIFICAR_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.LER_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.MODIFICAR_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.LER_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.LER_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.MODIFICAR_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
-			((SELECT id FROM security.permission WHERE nome = '${DashboardPermission.LER_DASHBOARD}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}'))
-		`)
+			INSERT INTO security.perfil_permission (permission_id, perfil_id) VALUES
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.LER_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_PUBLIC}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${UsuarioPermission.MODIFICAR_USUARIO_CLIENTE}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${PerfilPermission.LER_PERFIL}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${PermissionsPermission.LER_PERMISSIONS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${MunicipioPermission.LER_MUNICIPIO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${EstadoPermission.LER_ESTADO}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.LER_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.MODIFICAR_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.LER_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.MODIFICAR_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.LER_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.LER_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.MODIFICAR_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}')),
+				((SELECT id FROM security.permission WHERE nome = '${DashboardPermission.LER_DASHBOARD}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.CLIENTE}'))
+			`)
 
 			/** --------------
 			@ESTADO
 			-------------- */
 			await queryRunner.query(` 
-		INSERT INTO public.estado (id_public, nome, sigla) VALUES
-			(uuid_generate_v4(), 'Rondônia', 'RO'), 
-			(uuid_generate_v4(), 'Acre', 'AC'), 
-			(uuid_generate_v4(), 'Amazonas', 'AM'), 
-			(uuid_generate_v4(), 'Roraima', 'RR'), 
-			(uuid_generate_v4(), 'Pará', 'PA'), 
-			(uuid_generate_v4(), 'Amapá', 'AP'), 
-			(uuid_generate_v4(), 'Tocantins', 'TO'), 
-			(uuid_generate_v4(), 'Maranhão', 'MA'), 
-			(uuid_generate_v4(), 'Piauí', 'PI'), 
-			(uuid_generate_v4(), 'Ceará', 'CE'), 
-			(uuid_generate_v4(), 'Rio Grande do Norte', 'RN'), 
-			(uuid_generate_v4(), 'Paraíba', 'PB'), 
-			(uuid_generate_v4(), 'Pernambuco', 'PE'), 
-			(uuid_generate_v4(), 'Alagoas', 'AL'), 
-			(uuid_generate_v4(), 'Sergipe', 'SE'), 
-			(uuid_generate_v4(), 'Bahia', 'BA'), 
-			(uuid_generate_v4(), 'Minas Gerais', 'MG'), 
-			(uuid_generate_v4(), 'Espirito Santo', 'ES'), 
-			(uuid_generate_v4(), 'Rio de Janeiro', 'RJ'), 
-			(uuid_generate_v4(), 'São Paulo', 'SP'), 
-			(uuid_generate_v4(), 'Paraná', 'PR'), 
-			(uuid_generate_v4(), 'Santa Catarina', 'SC'), 
-			(uuid_generate_v4(), 'Rio Grande do Sul', 'RS'), 
-			(uuid_generate_v4(), 'Mato Grosso do Sul', 'MS'), 
-			(uuid_generate_v4(), 'Mato Grosso', 'MT'), 
-			(uuid_generate_v4(), 'Goiás', 'GO'), 
-			(uuid_generate_v4(), 'Distrito Federal', 'DF'), 
-			(uuid_generate_v4(), 'Brasil', 'BR')
-		`)
+			INSERT INTO public.estado (id_public, nome, sigla) VALUES
+				(uuid_generate_v4(), 'Rondônia', 'RO'), 
+				(uuid_generate_v4(), 'Acre', 'AC'), 
+				(uuid_generate_v4(), 'Amazonas', 'AM'), 
+				(uuid_generate_v4(), 'Roraima', 'RR'), 
+				(uuid_generate_v4(), 'Pará', 'PA'), 
+				(uuid_generate_v4(), 'Amapá', 'AP'), 
+				(uuid_generate_v4(), 'Tocantins', 'TO'), 
+				(uuid_generate_v4(), 'Maranhão', 'MA'), 
+				(uuid_generate_v4(), 'Piauí', 'PI'), 
+				(uuid_generate_v4(), 'Ceará', 'CE'), 
+				(uuid_generate_v4(), 'Rio Grande do Norte', 'RN'), 
+				(uuid_generate_v4(), 'Paraíba', 'PB'), 
+				(uuid_generate_v4(), 'Pernambuco', 'PE'), 
+				(uuid_generate_v4(), 'Alagoas', 'AL'), 
+				(uuid_generate_v4(), 'Sergipe', 'SE'), 
+				(uuid_generate_v4(), 'Bahia', 'BA'), 
+				(uuid_generate_v4(), 'Minas Gerais', 'MG'), 
+				(uuid_generate_v4(), 'Espirito Santo', 'ES'), 
+				(uuid_generate_v4(), 'Rio de Janeiro', 'RJ'), 
+				(uuid_generate_v4(), 'São Paulo', 'SP'), 
+				(uuid_generate_v4(), 'Paraná', 'PR'), 
+				(uuid_generate_v4(), 'Santa Catarina', 'SC'), 
+				(uuid_generate_v4(), 'Rio Grande do Sul', 'RS'), 
+				(uuid_generate_v4(), 'Mato Grosso do Sul', 'MS'), 
+				(uuid_generate_v4(), 'Mato Grosso', 'MT'), 
+				(uuid_generate_v4(), 'Goiás', 'GO'), 
+				(uuid_generate_v4(), 'Distrito Federal', 'DF'), 
+				(uuid_generate_v4(), 'Brasil', 'BR')
+			`)
 
 			/** --------------
 			@MUNICIPIO
@@ -5896,9 +5765,7 @@ export class Init2025612142800 implements MigrationInterface {
 		} catch (error) {
 			logger.error('Erro ao executar migration Init2025612142800', error.message);
 			throw error;
-		} finally {
-			await app.close();
-		}
+		} 
 
 	}
 
@@ -5909,7 +5776,6 @@ export class Init2025612142800 implements MigrationInterface {
 		await queryRunner.clearTable('security.permission');
 		await queryRunner.clearTable('security.perfil_permission');
 		await queryRunner.clearTable('security.usuario');
-		await queryRunner.query(`DROP SCHEMA IF EXISTS security CASCADE`);
 	}
 
 }
