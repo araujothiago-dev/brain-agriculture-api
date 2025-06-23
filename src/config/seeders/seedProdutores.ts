@@ -1,14 +1,11 @@
-import { Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from 'src/app.module';
+import { INestApplicationContext, Logger } from '@nestjs/common';
 import { CreateProdutoreDto } from 'src/produtores/dto/create-produtor.dto';
 import { Produtor } from 'src/produtores/entities/produtor.entity';
 import { ProdutoresService } from 'src/produtores/services/produtores.service';
 import { DataSource } from 'typeorm';
 
-export async function seedProdutores(dataSource: DataSource) {
+export async function seedProdutores(dataSource: DataSource, app: INestApplicationContext) {
     const logger = new Logger('SeeddProdutores');
-    const app = await NestFactory.createApplicationContext(AppModule);
 
     try {
         const produtorService = app.get(ProdutoresService);
@@ -75,7 +72,5 @@ export async function seedProdutores(dataSource: DataSource) {
     } catch (error) {
         logger.error('Erro durante o seed de produtores', error.message);
         throw error;
-    } finally {
-        await app.close();
-    }
+    } 
 }

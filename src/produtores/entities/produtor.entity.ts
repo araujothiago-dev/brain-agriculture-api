@@ -3,7 +3,7 @@ import { Usuario } from "src/usuario/entities/usuario.entity";
 import { BaseEntity } from "src/utils/entities/base.entity";
 import { Column, DeleteDateColumn, Entity, Generated, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('produtores')
+@Entity({ name: 'produtores', schema: 'public' })
 export class Produtor extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;

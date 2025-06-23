@@ -27,11 +27,12 @@ export class UsuarioService {
 
   async create(body: CreateUsuarioDto) {
     try {
-      const cpfCnpj = body.cpfCnpj.replace(/[^0-9]/g, "").trim();
-
-      if (!(await this.cpfCnpjVerify.cpfCnpjVerify(cpfCnpj))) {
+      
+      if (!(await this.cpfCnpjVerify.cpfCnpjVerify(body.cpfCnpj))) {
         throw 'CPF/CNPJ inválido.';
       }
+      
+      const cpfCnpj = body.cpfCnpj.replace(/[^0-9]/g, "").trim();
 
       const usuarioCheck = await this.usuarioRepository.findOne({
         loadEagerRelations: false,
@@ -42,7 +43,7 @@ export class UsuarioService {
         select: ['id', 'idPublic', 'email'],
       });
 
-      if (usuarioCheck?.cpfCnpj == cpfCnpj) {
+      if (usuarioCheck?.cpfCnpj.replace(/[^0-9]/g, "").trim() == cpfCnpj) {
         throw 'Usuário já cadastrado com o mesmo CPF/CNPJ.';
       }
 
@@ -60,7 +61,7 @@ export class UsuarioService {
 
       const perfil = await this.dataSource.getRepository(Perfil).findOneBy({ id: body.perfil.id });
 
-      if (perfil == null) {
+      if (!perfil) {
         throw 'Nenhum perfil encontrado.';
       }
 

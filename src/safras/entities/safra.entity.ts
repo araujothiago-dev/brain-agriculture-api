@@ -1,7 +1,7 @@
 import { PropriedadeCulturaSafra } from "src/propriedadeCulturaSafra/propriedadeCulturaSafra.entity";
 import { Column, Entity, Generated, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('safras')
+@Entity({ name: 'safras', schema: 'public' })
 export class Safra {
     @PrimaryGeneratedColumn()
     id: number;

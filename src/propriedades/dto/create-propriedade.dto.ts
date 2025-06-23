@@ -1,6 +1,5 @@
 import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
-import { Cultura } from "src/culturas/entities/cultura.entity";
 import { Municipio } from "src/municipio/entities/municipio.entity";
 import { Produtor } from "src/produtores/entities/produtor.entity";
 import { IdDto } from "src/utils/id.dto";
