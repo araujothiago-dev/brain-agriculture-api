@@ -29,8 +29,5 @@ export async function seeds(dataSource: DataSource) {
 
     } catch (error) {
         logger.error('Erro ao executar o seed:', error);
-    } finally {
-        await app.close();
-        await dataSource.destroy();
-    }
+    } 
 }
