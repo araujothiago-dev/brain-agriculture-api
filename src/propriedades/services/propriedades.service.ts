@@ -34,11 +34,11 @@ export class PropriedadesService {
         throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
       }
 
-      const propriedadeExistente = await this.propriedadeRepository.findOne({
+      const propriedadeOriginal = await this.propriedadeRepository.findOne({
         where: { matricula: body.matricula }
       });
 
-      if (propriedadeExistente) {
+      if (propriedadeOriginal) {
         throw 'Já existe uma propriedade com esta matrícula de imóvel.';
       }
 
@@ -100,7 +100,7 @@ export class PropriedadesService {
           }
 
           await pcsRepository.save({
-            propriedade,
+            propriedade: propriedade as Propriedade,
             cultura,
             safra: safra,
           });
@@ -262,24 +262,39 @@ export class PropriedadesService {
     await queryRunner.startTransaction();
 
     try {
-      const somaAreas = (body.areaAgricultavel ?? 0) + (body.areaVegetacao ?? 0);
-      if (somaAreas > (body.areaTotal ?? 0)) {
-        throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
-      }
-
-      const propriedadeReturne = await this.propriedadeRepository.findOneBy({
+      const propriedadeOriginal = await this.propriedadeRepository.findOneBy({
         idPublic: idPublic
       })
 
-      if (!propriedadeReturne) {
+      if (!propriedadeOriginal) {
         throw 'Não foi encontrada Propriedade com esta identificação: ' + idPublic;
       }
 
-      if (body.cidade) {
-        const cidadeExistente = await this.dataSource.getRepository(Municipio).findOne({ where: { id: body.cidade.id } });
+      if (body.areaAgricultavel && body.areaVegetacao) {
+        const somaAreas = (body.areaAgricultavel) + (body.areaVegetacao);
+        if (somaAreas > (propriedadeOriginal.areaTotal)) {
+          throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
+        }
+      }
 
-        if (!cidadeExistente) {
-          throw 'Município não encontrado.';
+      if (body.areaAgricultavel && !body.areaVegetacao) {
+        const somaAreas = (body.areaAgricultavel) + (propriedadeOriginal.areaVegetacao);
+        if (somaAreas > (propriedadeOriginal.areaTotal)) {
+          throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
+        }
+      }
+
+      if (!body.areaAgricultavel && body.areaVegetacao) {
+        const somaAreas = (propriedadeOriginal.areaAgricultavel) + (body.areaVegetacao);
+        if (somaAreas > (propriedadeOriginal.areaTotal ?? 0)) {
+          throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
+        }
+      }
+
+      if (body.areaTotal) {
+        const somaAreas = (propriedadeOriginal.areaAgricultavel) + (propriedadeOriginal.areaVegetacao);
+        if (somaAreas > (body.areaTotal ?? 0)) {
+          throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
         }
       }
 
@@ -312,9 +327,12 @@ export class PropriedadesService {
         );
       }
 
-      const bodyUpdate: Propriedade = { ...propriedadeReturne, ...body };
+      body.id = propriedadeOriginal.id;
+      body.idPublic = propriedadeOriginal.idPublic;
 
-      const propriedade = await queryRunner.manager.save(Propriedade, bodyUpdate);
+      const bodyUpdate: Propriedade = { ...propriedadeOriginal, ...body };
+
+      await queryRunner.manager.save(Propriedade, bodyUpdate);
 
       await queryRunner.commitTransaction();
 
@@ -338,11 +356,22 @@ export class PropriedadesService {
             safra = safraResult;
           }
 
-          await pcsRepository.save({
-            propriedade,
-            cultura,
-            safra: safra,
+          const existePCS = await pcsRepository.findOne({
+            where: {
+              propriedade: { id: propriedadeOriginal.id },
+              cultura: { id: cultura.id },
+              ...(safra && { safra: { id: safra.id } }),
+            },
+            relations: ['propriedade', 'cultura', 'safra'],
           });
+
+          if(!existePCS) {
+            await pcsRepository.save({
+              propriedade: propriedadeOriginal,
+              cultura,
+              safra: safra,
+            });
+          }
         }
       }
 
@@ -366,18 +395,42 @@ export class PropriedadesService {
     await queryRunner.startTransaction();
 
     try {
-      const somaAreas = (body.areaAgricultavel ?? 0) + (body.areaVegetacao ?? 0);
-      if (somaAreas > (body.areaTotal ?? 0)) {
-        throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
-      }
-
-      const propriedadeReturne = await this.propriedadeRepository.findOneBy({
+      const propriedadeOriginal = await this.propriedadeRepository.findOneBy({
         idPublic: idPublic
       })
 
-      if (!propriedadeReturne) {
+      if (!propriedadeOriginal) {
         throw 'Não foi encontrada Propriedade com esta identificação: ' + idPublic;
       }
+
+      if (body.areaAgricultavel && body.areaVegetacao) {
+        const somaAreas = (body.areaAgricultavel) + (body.areaVegetacao);
+        if (somaAreas > (propriedadeOriginal.areaTotal)) {
+          throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
+        }
+      }
+
+      if (body.areaAgricultavel && !body.areaVegetacao) {
+        const somaAreas = (body.areaAgricultavel) + (propriedadeOriginal.areaVegetacao);
+        if (somaAreas > (propriedadeOriginal.areaTotal)) {
+          throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
+        }
+      }
+
+      if (!body.areaAgricultavel && body.areaVegetacao) {
+        const somaAreas = (propriedadeOriginal.areaAgricultavel) + (body.areaVegetacao);
+        if (somaAreas > (propriedadeOriginal.areaTotal ?? 0)) {
+          throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
+        }
+      }
+
+      if (body.areaTotal) {
+        const somaAreas = (propriedadeOriginal.areaAgricultavel) + (propriedadeOriginal.areaVegetacao);
+        if (somaAreas > (body.areaTotal ?? 0)) {
+          throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
+        }
+      }
+      
 
       if (body.culturas?.length) {
         const culturaRepository = this.dataSource.getRepository(Cultura);
@@ -399,10 +452,13 @@ export class PropriedadesService {
           })
         );
       }
+      
+      body.id = propriedadeOriginal.id;
+      body.idPublic = propriedadeOriginal.idPublic;
 
-      const bodyUpdate: Propriedade = { ...propriedadeReturne, ...body };
-
-      const propriedade = await queryRunner.manager.save(Propriedade, bodyUpdate);
+      const bodyUpdate: Propriedade = { ...propriedadeOriginal, ...body,  };
+      
+      await queryRunner.manager.save(Propriedade, bodyUpdate);
 
       await queryRunner.commitTransaction();
 
@@ -426,11 +482,22 @@ export class PropriedadesService {
             safra = safraResult;
           }
 
-          await pcsRepository.save({
-            propriedade,
-            cultura,
-            safra: safra,
+          const existePCS = await pcsRepository.findOne({
+            where: {
+              propriedade: { id: propriedadeOriginal.id },
+              cultura: { id: cultura.id },
+              ...(safra && { safra: { id: safra.id } }),
+            },
+            relations: ['propriedade', 'cultura', 'safra'],
           });
+
+          if(!existePCS) {
+            await pcsRepository.save({
+              propriedade: propriedadeOriginal,
+              cultura,
+              safra: safra,
+            });
+          }
         }
       }
 
