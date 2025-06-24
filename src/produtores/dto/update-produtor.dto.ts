@@ -1,8 +1,9 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { IsDate, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 import { CreateProdutoreDto } from './create-produtor.dto';
+import { OmitType } from '@nestjs/swagger';
 
-export class UpdateProdutoreDto extends PartialType(CreateProdutoreDto) {
+export class UpdateProdutoreDto extends OmitType(CreateProdutoreDto, ['cpfCnpj'] as const) {
     @IsOptional()
     @IsNumber({}, { message: "O 'id' deve ser um número." })
     id?: number;
