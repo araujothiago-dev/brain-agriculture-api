@@ -2,7 +2,7 @@ import { Municipio } from "src/municipio/entities/municipio.entity";
 import { Produtor } from "src/produtores/entities/produtor.entity";
 import { PropriedadeCulturaSafra } from "src/propriedadeCulturaSafra/propriedadeCulturaSafra.entity";
 import { BaseEntity } from "src/utils/entities/base.entity";
-import { Column, Entity, Generated, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, Generated, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: 'propriedades', schema: 'public' })
 export class Propriedade extends BaseEntity {
@@ -42,4 +42,7 @@ export class Propriedade extends BaseEntity {
 
     @OneToMany(() => PropriedadeCulturaSafra, pcs => pcs.propriedade)
     culturasSafras: PropriedadeCulturaSafra[];
+
+    @DeleteDateColumn()
+    dataDelete: Date;
 }

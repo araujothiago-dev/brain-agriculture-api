@@ -1,5 +1,5 @@
 import { PropriedadeCulturaSafra } from "src/propriedadeCulturaSafra/propriedadeCulturaSafra.entity";
-import { Column, Entity, Generated, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, DeleteDateColumn, Entity, Generated, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: 'safras', schema: 'public' })
 export class Safra {
@@ -19,4 +19,7 @@ export class Safra {
 
     @OneToMany(() => PropriedadeCulturaSafra, pcs => pcs.safra)
     propriedadesCulturas: PropriedadeCulturaSafra[];
+
+    @DeleteDateColumn()
+    dataDelete: Date;
 }

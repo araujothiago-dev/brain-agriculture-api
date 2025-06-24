@@ -365,7 +365,7 @@ export class PropriedadesService {
             relations: ['propriedade', 'cultura', 'safra'],
           });
 
-          if(!existePCS) {
+          if (!existePCS) {
             await pcsRepository.save({
               propriedade: propriedadeOriginal,
               cultura,
@@ -430,7 +430,7 @@ export class PropriedadesService {
           throw 'A soma das áreas agricultável e de vegetação não pode ser maior que a área total.'
         }
       }
-      
+
 
       if (body.culturas?.length) {
         const culturaRepository = this.dataSource.getRepository(Cultura);
@@ -452,12 +452,12 @@ export class PropriedadesService {
           })
         );
       }
-      
+
       body.id = propriedadeOriginal.id;
       body.idPublic = propriedadeOriginal.idPublic;
 
-      const bodyUpdate: Propriedade = { ...propriedadeOriginal, ...body,  };
-      
+      const bodyUpdate: Propriedade = { ...propriedadeOriginal, ...body, };
+
       await queryRunner.manager.save(Propriedade, bodyUpdate);
 
       await queryRunner.commitTransaction();
@@ -491,7 +491,7 @@ export class PropriedadesService {
             relations: ['propriedade', 'cultura', 'safra'],
           });
 
-          if(!existePCS) {
+          if (!existePCS) {
             await pcsRepository.save({
               propriedade: propriedadeOriginal,
               cultura,
@@ -523,13 +523,21 @@ export class PropriedadesService {
         throw 'Não foi encontrada Propriedade com esta identificação: ' + idPublic;
       }
 
-      const returnDelete = await this.propriedadeRepository.delete({ idPublic: propriedadeReturn.idPublic }).catch(async err => {
-        if (err?.code == '23503') {
-          return await this.propriedadeRepository.softDelete({ idPublic: propriedadeReturn.idPublic })
+      let returnDelete;
+
+      try {
+        returnDelete = await this.propriedadeRepository.delete({ idPublic: propriedadeReturn.idPublic });
+  
+        if (returnDelete.affected === 0) {
+          throw 'Nenhuma propriedade foi deleto.';
+        }
+      } catch (err) {
+        if (err?.code === '23503') {
+          returnDelete = await this.propriedadeRepository.softDelete({ idPublic: propriedadeReturn.idPublic });
         } else {
           throw err;
         }
-      });
+      }
 
       return new ResponseGeneric<Propriedade>(null, returnDelete.affected + ' Propriedade deletada com sucesso.');
     } catch (error) {
