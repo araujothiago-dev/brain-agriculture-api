@@ -29,8 +29,6 @@ export class ProdutoresController {
     @Param('size') size: number, 
     @Param('parameter') parameter: string = ''
   ): Promise<ResponseGeneric<PaginationInterface<Produtor[]>>> {
-    console.log(page, size, parameter);
-    
     return await this.produtoresService.findAllByParameter(page, size, parameter);
   }
 
@@ -40,8 +38,6 @@ export class ProdutoresController {
     @Param('page') page: number, 
     @Param('size') size: number, 
   ): Promise<ResponseGeneric<PaginationInterface<Produtor[]>>> {
-    console.log(page, size);
-    
     return await this.produtoresService.findAll(page, size);
   }
 
