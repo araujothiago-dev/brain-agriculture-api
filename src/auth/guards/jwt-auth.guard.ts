@@ -9,16 +9,18 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
     const method = request.method;
     const body = request.body;
-    request.body.userToken = request.user;
-
-    switch (method) {
-      case 'POST':
-        body.createdBy = request.user.idPublic;
-        break;
-      case 'PATCH':
-      case 'DELETE':
-        body.updatedBy = request.user.idPublic;
-        break;
+    if(body) {
+      request.body.userToken = request.user;
+  
+      switch (method) {
+        case 'POST':
+          body.createdBy = request.user.idPublic;
+          break;
+        case 'PATCH':
+        case 'DELETE':
+          body.updatedBy = request.user.idPublic;
+          break;
+      }
     }
     
     return returnData;

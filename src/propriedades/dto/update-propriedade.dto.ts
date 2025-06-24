@@ -2,7 +2,7 @@ import { OmitType } from '@nestjs/swagger';
 import { IsDate, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 import { CreatePropriedadeDto } from './create-propriedade.dto';
 
-export class UpdatePropriedadeDto extends OmitType(CreatePropriedadeDto, ['matricula', 'cidade', 'produtor']) {
+export class UpdatePropriedadeDto extends OmitType(CreatePropriedadeDto, ['matricula', 'cidade', 'produtor'] as const) {
     @IsOptional()
     @IsNumber({}, { message: "O 'id' deve ser um número." })
     id?: number;

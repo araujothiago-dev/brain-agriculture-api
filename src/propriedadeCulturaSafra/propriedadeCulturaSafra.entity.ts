@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, DeleteDateColumn, Column, Generated, Index } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, DeleteDateColumn, Column, Generated, Index, Unique } from "typeorm";
 import { Cultura } from "src/culturas/entities/cultura.entity";
 import { Safra } from "src/safras/entities/safra.entity";
 import { Propriedade } from "src/propriedades/entities/propriedade.entity";
 
 @Entity({ name: 'propriedade_cultura_safra', schema: 'public' })
+@Unique('UQ_propriedade_cultura_safra', ['propriedade', 'cultura', 'safra'])
 export class PropriedadeCulturaSafra {
     @PrimaryGeneratedColumn()
     id: number;

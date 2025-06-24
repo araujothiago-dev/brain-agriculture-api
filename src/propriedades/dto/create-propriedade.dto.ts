@@ -38,10 +38,12 @@ export class CreatePropriedadeDto {
     @ValidateNested({ message: " O id do 'produtor' deve ser informado." })
     produtor: Produtor;
 
+    
+    @IsOptional()
     @IsArray()
     @Type(() => CulturaSafraInputDto)
     @ValidateNested({ each: true })
-    culturas: CulturaSafraInputDto[];
+    culturas?: CulturaSafraInputDto[];
 
     @IsOptional()
     @IsString({ message: "O 'createdBy' deve ser uma string." })

@@ -62,6 +62,7 @@ export class Init2025612142800 implements MigrationInterface {
 				(uuid_generate_v4(), '${DashboardPermission.LER_DASHBOARD}', 'Permite visualizar empresas registrados.'),
 				(uuid_generate_v4(), '${ProdutorPermission.LER_PRODUTOR}', 'Permite visualizar produtores registrados.'),
 				(uuid_generate_v4(), '${ProdutorPermission.MODIFICAR_PRODUTOR}', 'Permite editar, adicionar e excluir produtores registrados.'),
+				(uuid_generate_v4(), '${ProdutorPermission.MODIFICAR_PRODUTOR_ADMIN}', 'Permite editar, adicionar e excluir produtores registrados apenas por parceiros e administradores.'),
 				(uuid_generate_v4(), '${PropriedadesPermission.LER_PROPRIEDADES}', 'Permite visualizar propriedades registrados.'),
 				(uuid_generate_v4(), '${PropriedadesPermission.MODIFICAR_PROPRIEDADES}', 'Permite editar, adicionar e excluir propriedades registrados.'),
 				(uuid_generate_v4(), '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}', 'Permite editar, adicionar e excluir apenas propriedades existentes registrados.'),
@@ -93,6 +94,7 @@ export class Init2025612142800 implements MigrationInterface {
 				((SELECT id FROM security.permission WHERE nome = '${CulturasPermission.MODIFICAR_CULTURAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
 				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.LER_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
 				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.MODIFICAR_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
+				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.MODIFICAR_PRODUTOR_ADMIN}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
 				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.LER_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
 				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
 				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.ADMIN}')),
@@ -121,6 +123,8 @@ export class Init2025612142800 implements MigrationInterface {
 				((SELECT id FROM security.permission WHERE nome = '${PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
 				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.LER_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
 				((SELECT id FROM security.permission WHERE nome = '${SafrasPermission.MODIFICAR_SAFRAS}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.MODIFICAR_PRODUTOR}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
+				((SELECT id FROM security.permission WHERE nome = '${ProdutorPermission.MODIFICAR_PRODUTOR_ADMIN}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}')),
 				((SELECT id FROM security.permission WHERE nome = '${DashboardPermission.LER_DASHBOARD}'), (SELECT id FROM security.perfil WHERE nome = '${PerfilEnum.PARCEIRO}'))
 			`)
 

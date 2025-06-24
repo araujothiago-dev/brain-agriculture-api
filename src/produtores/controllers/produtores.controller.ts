@@ -63,7 +63,7 @@ export class ProdutoresController {
   }
 
   @Delete(':idPublic')
-  @UseGuards(PermissionGuard(ProdutorPermission.MODIFICAR_PRODUTOR))
+  @UseGuards(PermissionGuard(ProdutorPermission.MODIFICAR_PRODUTOR_ADMIN))
   remove(@Param('idPublic') idPublic: string): Promise<ResponseGeneric<Produtor>> {
     return this.produtoresService.remove(idPublic);
   }

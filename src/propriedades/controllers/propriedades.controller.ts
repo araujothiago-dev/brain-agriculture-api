@@ -58,7 +58,7 @@ export class PropriedadesController {
   }
 
   @Delete(':idPublic')
-  @UseGuards(PermissionGuard(PropriedadesPermission.MODIFICAR_PROPRIEDADES))
+  @UseGuards(PermissionGuard(PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN))
   async remove(@Param('idPublic') idPublic: string): Promise<ResponseGeneric<Propriedade>> {
     return await this.propriedadesService.remove(idPublic);
   }

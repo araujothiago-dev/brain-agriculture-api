@@ -188,19 +188,19 @@ export class ProdutoresService {
     await queryRunner.startTransaction();
 
     try {
-      const produtorReturne = await this.produtorRepository.findOneBy({
+      const produtorOriginal = await this.produtorRepository.findOneBy({
         idPublic: idPublic
       })
 
-      if (!produtorReturne) {
+      if (!produtorOriginal) {
         throw 'Não foi encontrado Produtor com esta identificação: ' + idPublic;
       }
 
-      const bodyUpdate: Produtor = {
-        ...produtorReturne,
-        ...body,
-        usuario: body.usuario as Usuario
-      };
+      
+      body.id = produtorOriginal.id;
+      body.idPublic = produtorOriginal.idPublic;
+
+      const bodyUpdate = { ...produtorOriginal, ...body };
 
       await queryRunner.manager.save(Produtor, bodyUpdate);
 
@@ -231,13 +231,21 @@ export class ProdutoresService {
         throw 'Não foi encontrado Produtor com esta identificação: ' + idPublic;
       }
 
-      const returnDelete = await this.produtorRepository.delete({ idPublic: produtorReturn.idPublic }).catch(async err => {
-        if (err?.code == '23503') {
-          return await this.produtorRepository.softDelete({ idPublic: produtorReturn.idPublic })
+      let returnDelete;
+
+      try {
+        returnDelete = await this.produtorRepository.delete({ idPublic: produtorReturn.idPublic });
+  
+        if (returnDelete.affected === 0) {
+          throw 'Nenhum produtor foi deleto.';
+        }
+      } catch (err) {
+        if (err?.code === '23503') {
+          returnDelete = await this.produtorRepository.softDelete({ idPublic: produtorReturn.idPublic });
         } else {
           throw err;
         }
-      });
+      }
 
       return new ResponseGeneric<Produtor>(null, returnDelete.affected + ' Produtor deletado com sucesso.');
     } catch (error) {
