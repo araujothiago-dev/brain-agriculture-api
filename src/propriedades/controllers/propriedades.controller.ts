@@ -9,6 +9,7 @@ import { PaginationInterface } from 'src/utils/interface/pagination.interface';
 import PermissionGuard from 'src/auth/guards/permission.guard';
 import PropriedadesPermission from '../enums/propriedadesPermission.enum';
 import { UpdatePropriedadeParceiroDto } from '../dto/update-propriedade-parceiro.dto copy';
+import { FindOneParams } from 'src/utils/findOne.params';
 
 @ApiBearerAuth('access_token')
 @ApiTags('propriedades')
@@ -41,25 +42,25 @@ export class PropriedadesController {
 
   @Get(':idPublic')
   @UseGuards(PermissionGuard(PropriedadesPermission.LER_PROPRIEDADES))
-  async findOne(@Param('idPublic') idPublic: string): Promise<ResponseGeneric<Propriedade>> {
+  async findOne(@Param() {idPublic}: FindOneParams): Promise<ResponseGeneric<Propriedade>> {
     return await this.propriedadesService.findOne(idPublic);
   }
 
   @Patch('parceiro/:idPublic')
   @UseGuards(PermissionGuard(PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN))
-  async updateParceiro(@Param('idPublic') idPublic: string, @Body() body: UpdatePropriedadeParceiroDto): Promise<ResponseGeneric<Propriedade>> {
+  async updateParceiro(@Param() {idPublic}: FindOneParams, @Body() body: UpdatePropriedadeParceiroDto): Promise<ResponseGeneric<Propriedade>> {
     return await this.propriedadesService.updateParceiro(idPublic, body);
   }
 
   @Patch(':idPublic')
   @UseGuards(PermissionGuard(PropriedadesPermission.MODIFICAR_PROPRIEDADES))
-  async update(@Param('idPublic') idPublic: string, @Body() body: UpdatePropriedadeDto): Promise<ResponseGeneric<Propriedade>> {
+  async update(@Param() {idPublic}: FindOneParams, @Body() body: UpdatePropriedadeDto): Promise<ResponseGeneric<Propriedade>> {
     return await this.propriedadesService.update(idPublic, body);
   }
 
   @Delete(':idPublic')
   @UseGuards(PermissionGuard(PropriedadesPermission.MODIFICAR_PROPRIEDADES_ADMIN))
-  async remove(@Param('idPublic') idPublic: string): Promise<ResponseGeneric<Propriedade>> {
+  async remove(@Param() {idPublic}: FindOneParams): Promise<ResponseGeneric<Propriedade>> {
     return await this.propriedadesService.remove(idPublic);
   }
 

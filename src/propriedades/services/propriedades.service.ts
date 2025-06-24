@@ -523,9 +523,9 @@ export class PropriedadesService {
         throw 'Não foi encontrada Propriedade com esta identificação: ' + idPublic;
       }
 
-      const culturasSafrasRepository = this.dataSource.getRepository(PropriedadeCulturaSafra);
+      const culturasSafrasPropriedadesRepository = this.dataSource.getRepository(PropriedadeCulturaSafra);
 
-      const culturasSafras = await culturasSafrasRepository.find({
+      const culturasSafrasPropriedades = await culturasSafrasPropriedadesRepository.find({
         where: {
           propriedade: {
             id: propriedadeReturn.id
@@ -544,9 +544,9 @@ export class PropriedadesService {
       } catch (err) {
         if (err?.code === '23503') {
           returnDelete = await this.propriedadeRepository.softDelete({ idPublic: propriedadeReturn.idPublic });
-          if (culturasSafras.length > 0) {
-            for (const culturaSafra of culturasSafras) {
-              await culturasSafrasRepository.softDelete({ propriedade: { id: culturaSafra.id } });
+          if (culturasSafrasPropriedades.length > 0) {
+            for (const culturaSafraPropriedade of culturasSafrasPropriedades) {
+              await culturasSafrasPropriedadesRepository.softDelete({ id: culturaSafraPropriedade.id });
             }
           }
         } else {
