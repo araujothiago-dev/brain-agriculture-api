@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import PerfilEnum from 'src/perfil/enums/perfil.enum';
+import { PropriedadeCulturaSafra } from 'src/propriedadeCulturaSafra/propriedadeCulturaSafra.entity';
+import { Propriedade } from 'src/propriedades/entities/propriedade.entity';
 import { CpfCnpjVerify } from 'src/utils/cpf-cnpj-verify/cpf-cnpj-verify';
 import { PaginationInterface } from 'src/utils/interface/pagination.interface';
 import { ResponseGeneric } from 'src/utils/response.generic';
@@ -9,7 +11,6 @@ import { UsuarioService } from '../../usuario/service/usuario.service';
 import { CreateProdutoreDto } from '../dto/create-produtor.dto';
 import { UpdateProdutoreDto } from '../dto/update-produtor.dto';
 import { Produtor } from '../entities/produtor.entity';
-import { Usuario } from 'src/usuario/entities/usuario.entity';
 
 @Injectable()
 export class ProdutoresService {
@@ -18,7 +19,7 @@ export class ProdutoresService {
     private produtorRepository: Repository<Produtor>,
     private dataSource: DataSource,
     private readonly usuarioService: UsuarioService,
-    private cpfCnpjVerify: CpfCnpjVerify,
+    private cpfCnpjVerify: CpfCnpjVerify
   ) { }
 
   async create(body: CreateProdutoreDto) {
@@ -68,7 +69,7 @@ export class ProdutoresService {
       return new ResponseGeneric<Produtor>(produtorReturn);
     } catch (error) {
       console.log(error);
-      
+
       throw new HttpException({ message: 'Não foi possível cadastrar Produtor. ', code: error?.code, erro: error }, HttpStatus.BAD_REQUEST);
     }
   }
@@ -196,7 +197,6 @@ export class ProdutoresService {
         throw 'Não foi encontrado Produtor com esta identificação: ' + idPublic;
       }
 
-      
       body.id = produtorOriginal.id;
       body.idPublic = produtorOriginal.idPublic;
 
@@ -231,17 +231,33 @@ export class ProdutoresService {
         throw 'Não foi encontrado Produtor com esta identificação: ' + idPublic;
       }
 
+      const propriedadeRepository = this.dataSource.getRepository(Propriedade);
+
+      const propriedades = await propriedadeRepository.find({
+        where: {
+          produtor: {
+            idPublic: produtorReturn.idPublic
+          }
+        }
+      })
+
       let returnDelete;
 
       try {
         returnDelete = await this.produtorRepository.delete({ idPublic: produtorReturn.idPublic });
-  
+
         if (returnDelete.affected === 0) {
           throw 'Nenhum produtor foi deleto.';
         }
       } catch (err) {
         if (err?.code === '23503') {
           returnDelete = await this.produtorRepository.softDelete({ idPublic: produtorReturn.idPublic });
+          if (propriedades.length > 0) {
+            for (const propriedade of propriedades) {
+              await propriedadeRepository.softDelete({ idPublic: propriedade.idPublic });
+              await this.dataSource.getRepository(PropriedadeCulturaSafra).softDelete({ propriedade: { id: propriedade.id } });
+            }
+          }
         } else {
           throw err;
         }
