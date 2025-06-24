@@ -2,10 +2,11 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } f
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import PermissionGuard from 'src/auth/guards/permission.guard';
 import { FindOneParams } from 'src/utils/findOne.params';
-import { IdDto } from 'src/utils/id.dto';
 import { PaginationInterface } from 'src/utils/interface/pagination.interface';
 import { ResponseGeneric } from 'src/utils/response.generic';
 import { CreateUsuarioDto } from '../dto/create-usuario.dto';
+import { UpdatePassDto } from '../dto/update-pass.dto';
+import { UpdateUsuarioSelfDto } from '../dto/update-usuario-self.dto';
 import { UpdateUsuarioDto } from '../dto/update-usuario.dto';
 import { Usuario } from '../entities/usuario.entity';
 import UsuarioPermission from '../enums/usuarioPermission.enum';
@@ -60,6 +61,18 @@ export class UsuarioController {
   @UseGuards(PermissionGuard(UsuarioPermission.MODIFICAR_USUARIO, false))
   async update(@Param() {idPublic}: FindOneParams, @Body() body: UpdateUsuarioDto): Promise<ResponseGeneric<Usuario>> {
     return await this.usuarioService.update(idPublic, body);
+  }
+
+  @Patch('produtor/:idPublic')
+  @UseGuards(PermissionGuard(UsuarioPermission.MODIFICAR_USUARIO_CLIENTE, false))
+  async updateCliente(@Param() {idPublic}: FindOneParams, @Body() body: UpdateUsuarioSelfDto): Promise<ResponseGeneric<Usuario>> {
+    return await this.usuarioService.updateCliente(idPublic, body);
+  }
+
+  @Patch('pass/:idPublic')
+  @UseGuards(PermissionGuard(UsuarioPermission.MODIFICAR_USUARIO_CLIENTE, false))
+  async updatePass(@Param() {idPublic}: FindOneParams, @Body() body: UpdatePassDto): Promise<ResponseGeneric<Usuario>> {
+    return await this.usuarioService.updatePass(idPublic, body);
   }
 
   @Delete(':idPublic')

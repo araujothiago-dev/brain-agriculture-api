@@ -13,6 +13,7 @@ import { CreateUsuarioDto } from '../dto/create-usuario.dto';
 import { UpdateUsuarioDto } from '../dto/update-usuario.dto';
 import { Usuario } from '../entities/usuario.entity';
 import { UpdatePassDto } from './../dto/update-pass.dto';
+import { UpdateUsuarioSelfDto } from '../dto/update-usuario-self.dto';
 require('dotenv').config();
 
 @Injectable()
@@ -27,11 +28,11 @@ export class UsuarioService {
 
   async create(body: CreateUsuarioDto) {
     try {
-      
+
       if (!(await this.cpfCnpjVerify.cpfCnpjVerify(body.cpfCnpj))) {
         throw 'CPF/CNPJ inválido.';
       }
-      
+
       const cpfCnpj = body.cpfCnpj.replace(/[^0-9]/g, "").trim();
 
       const usuarioCheck = await this.usuarioRepository.findOne({
@@ -73,7 +74,10 @@ export class UsuarioService {
         throw 'Erro ao buscar usuário.';
       }
 
-      return new ResponseGeneric<Usuario>(usuarioReturn);
+      const usuarioSemSenha = { ...usuarioReturn } as any;
+      delete usuarioSemSenha.senha;
+
+      return new ResponseGeneric<Usuario>(usuarioSemSenha);
     } catch (error) {
       console.log(error);
       throw new HttpException({ message: 'Não foi possível cadastrar Usuário. ', code: error?.code, erro: error }, HttpStatus.BAD_REQUEST)
@@ -317,11 +321,14 @@ export class UsuarioService {
 
       await queryRunner.manager.save(Usuario, bodyUpdate)
 
-      const usuario = await queryRunner.manager.findOneBy(Usuario, { idPublic });
+      const usuarioReturn = await queryRunner.manager.findOneBy(Usuario, { idPublic });
+
+      const usuarioSemSenha = { ...usuarioReturn } as any;
+      delete usuarioSemSenha.senha;
 
       await queryRunner.commitTransaction();
 
-      return new ResponseGeneric<Usuario>(usuario);
+      return new ResponseGeneric<Usuario>(usuarioSemSenha);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
@@ -332,7 +339,7 @@ export class UsuarioService {
     }
   }
 
-  async updateCliente(idPublic: string, body: UpdateUsuarioDto) {
+  async updateCliente(idPublic: string, body: UpdateUsuarioSelfDto) {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -362,11 +369,14 @@ export class UsuarioService {
 
       await queryRunner.manager.save(Usuario, bodyUpdate)
 
-      const usuario = await queryRunner.manager.findOneBy(Usuario, { idPublic });
+      const usuarioReturn = await queryRunner.manager.findOneBy(Usuario, { idPublic });
+      
+      const usuarioSemSenha = { ...usuarioReturn } as any;
+      delete usuarioSemSenha.senha;
 
       await queryRunner.commitTransaction();
 
-      return new ResponseGeneric<Usuario>(usuario);
+      return new ResponseGeneric<Usuario>(usuarioReturn);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
@@ -411,7 +421,16 @@ export class UsuarioService {
 
       await queryRunner.commitTransaction();
 
-      return await new ResponseGeneric<Usuario>(usuario);
+      const usuarioReturn = await this.usuarioRepository.findOne({ 
+        loadEagerRelations: false,
+        where: { id: usuario.id },
+        select: ['id', 'senha', 'email']
+      });
+
+      const usuarioSemSenha = { ...usuarioReturn } as any;
+      delete usuarioSemSenha.senha;
+
+      return await new ResponseGeneric<Usuario>(usuarioSemSenha);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
