@@ -55,8 +55,6 @@ export class DashboardService {
 
   async findAllProdutor(idProdutor: number) {
     try {
-      console.log(idProdutor);
-      
       let dashboard: GetDashboardDto = new GetDashboardDto();
 
       const preDashboard = await this.dataSource.createQueryBuilder()

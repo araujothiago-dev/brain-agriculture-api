@@ -242,6 +242,10 @@ export class ProdutoresService {
         }
       })
 
+      const usuario = await this.dataSource.getRepository(Usuario).findOneBy({
+          id: produtorReturn.usuario.id
+      })
+
       let returnDelete;
 
       try {
@@ -253,12 +257,14 @@ export class ProdutoresService {
       } catch (err) {
         if (err?.code === '23503') {
           returnDelete = await this.produtorRepository.softDelete({ idPublic: produtorReturn.idPublic });
-          await this.dataSource.getRepository(Usuario).softDelete({ id: produtorReturn.usuario.id });
           if (propriedades.length > 0) {
             for (const propriedade of propriedades) {
               await propriedadeRepository.softDelete({ idPublic: propriedade.idPublic });
               await this.dataSource.getRepository(PropriedadeCulturaSafra).softDelete({ propriedade: { id: propriedade.id } });
             }
+          }
+          if (usuario) {
+            await this.dataSource.getRepository(Usuario).softDelete({ id: usuario.id });
           }
         } else {
           throw err;

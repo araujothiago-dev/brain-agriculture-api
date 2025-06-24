@@ -31,19 +31,19 @@ export class SafrasController {
 
   @Get(':idPublic')
   @UseGuards(PermissionGuard(SafrasPermission.LER_SAFRAS, false))
-  findOne(@Param('idPublic') {idPublic}: FindOneParams): Promise<ResponseGeneric<Safra>> {
+  findOne(@Param() {idPublic}: FindOneParams): Promise<ResponseGeneric<Safra>> {
     return this.safrasService.findOne(idPublic);
   }
 
   @Patch(':idPublic')
   @UseGuards(PermissionGuard(SafrasPermission.MODIFICAR_SAFRAS, false))
-  async update(@Param('idPublic') {idPublic}: FindOneParams, @Body() body: UpdateSafraDto) {
+  async update(@Param() {idPublic}: FindOneParams, @Body() body: UpdateSafraDto): Promise<ResponseGeneric<Safra>> {
     return await this.safrasService.update(idPublic, body);
   }
 
   @Delete(':idPublic')
-  @UseGuards(PermissionGuard(SafrasPermission.MODIFICAR_SAFRAS, false))
-  async remove(@Param('idPublic') {idPublic}: FindOneParams) {
+  @UseGuards(PermissionGuard(SafrasPermission.MODIFICAR_SAFRAS_ADMIN, false))
+  async remove(@Param() {idPublic}: FindOneParams): Promise<ResponseGeneric<Safra>> {
     return await this.safrasService.remove(idPublic);
   }
 }

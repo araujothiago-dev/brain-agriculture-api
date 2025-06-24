@@ -31,19 +31,19 @@ export class CulturasController {
 
   @Get(':idPublic')
   @UseGuards(PermissionGuard(CulturasPermission.LER_CULTURAS, false))
-  findOne(@Param('idPublic') {idPublic}: FindOneParams): Promise<ResponseGeneric<Cultura>> {
+  findOne(@Param() {idPublic}: FindOneParams): Promise<ResponseGeneric<Cultura>> {
     return this.culturasService.findOne(idPublic);
   }
 
   @Patch(':idPublic')
   @UseGuards(PermissionGuard(CulturasPermission.MODIFICAR_CULTURAS, false))
-  async update(@Param('idPublic') {idPublic}: FindOneParams, @Body() updateCulturaDto: UpdateCulturaDto) {
+  async update(@Param() {idPublic}: FindOneParams, @Body() updateCulturaDto: UpdateCulturaDto) {
     return await this.culturasService.update(idPublic, updateCulturaDto);
   }
 
   @Delete(':idPublic')
-  @UseGuards(PermissionGuard(CulturasPermission.MODIFICAR_CULTURAS, false))
-  async remove(@Param('idPublic') {idPublic}: FindOneParams) {
+  @UseGuards(PermissionGuard(CulturasPermission.MODIFICAR_CULTURAS_ADMIN, false))
+  async remove(@Param() {idPublic}: FindOneParams) {
     return await this.culturasService.remove(idPublic);
   }
 }
