@@ -11,6 +11,7 @@ import { UsuarioService } from '../../usuario/service/usuario.service';
 import { CreateProdutoreDto } from '../dto/create-produtor.dto';
 import { UpdateProdutoreDto } from '../dto/update-produtor.dto';
 import { Produtor } from '../entities/produtor.entity';
+import { Usuario } from 'src/usuario/entities/usuario.entity';
 
 @Injectable()
 export class ProdutoresService {
@@ -252,6 +253,7 @@ export class ProdutoresService {
       } catch (err) {
         if (err?.code === '23503') {
           returnDelete = await this.produtorRepository.softDelete({ idPublic: produtorReturn.idPublic });
+          await this.dataSource.getRepository(Usuario).softDelete({ id: produtorReturn.usuario.id });
           if (propriedades.length > 0) {
             for (const propriedade of propriedades) {
               await propriedadeRepository.softDelete({ idPublic: propriedade.idPublic });
